@@ -117,9 +117,6 @@ class NodePart implements Part {
       node == endNode.previousSibling
       && node.nodeType == Node.TEXT_NODE
     ) {
-      // If we only have a single text node between the markers, we can just
-      // set its value, rather than replacing it.
-      // TODO(justinfagnani): Can we just check if this.value is primitive?
       node.textContent = value;
     } else {
       commitNode(Browser.document.createTextNode(value));
