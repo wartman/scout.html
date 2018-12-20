@@ -14,15 +14,16 @@ class Test {
       </header>
     ');
     var input = (
+      clz:String,
       initialValue:String, 
       handleClick:(e:Event)->Void
     ) -> html('
       ${header('Test')}
       <div id="display"></div>
-      <input id="target" class="test" name="foo" value="${initialValue}" />
+      <input id="target" class="foo-${initialValue} clz-${clz}" name="foo" value="${initialValue}" />
       <button on:click="${handleClick}">Change</button>
     ');
-    input('foo', e -> {
+    input('test', 'foo', e -> {
       var value:InputElement = cast Browser.document.getElementById('target');
       showFoo(value.value);
     }).render(Browser.document.getElementById('root'));

@@ -10,7 +10,9 @@ using haxe.macro.MacroStringTools;
 
 class TemplateBuilder {
 
-  static final placeholder:String = '{{__scout__}}';
+  static final placeholderStart:String = '{{__scout__';
+  static final placeholderRe = ~/{{__scout__(\d)*}}/ig;
+  static final placeholderReSplitter = ~/{{__scout__\d*}}/ig;
   static var id:Int = 0;
 
   public static function parse(tpl:ExprOf<String>) {
@@ -34,9 +36,9 @@ class TemplateBuilder {
       case EConst(CString(s)): 
         parts += s;
       default:
-        var key = placeholder;
-        parts += key;
         values.push(e);
+        var key = placeholderStart + values.indexOf(e) + '}}';
+        parts += key;
     }
     return parts;
   }
@@ -53,6 +55,7 @@ class TemplateBuilder {
     Context.defineModule('scout.html.${name}', [ macro class $name implements scout.html.TemplateFactory {
 
       public final id:String = $v{name};
+      public final debug:String = $v{str};
 
       public function new() {}
 
@@ -71,8 +74,26 @@ class TemplateBuilder {
   static function createElementFromXml(node:Xml) {
     var name = node.nodeName;
     var body:Array<Expr> = [];
+    var attrs = [ for (n in node.attributes()) n ];
+    attrs.sort((a, b) -> {
+      var aVal = node.get(a);
+      var bVal = node.get(b);
+      if (!placeholderRe.match(aVal) && !placeholderRe.match(bVal)) {
+        return 0;
+      } else if (placeholderRe.match(aVal) && !placeholderRe.match(bVal)) {
+        return 1;
+      } else if (!placeholderRe.match(aVal) && placeholderRe.match(bVal)) {
+        return -1;
+      } else {
+        placeholderRe.match(aVal);
+        var aIndex = Std.parseInt(placeholderRe.matched(1));
+        placeholderRe.match(bVal);
+        var bIndex = Std.parseInt(placeholderRe.matched(1));
+        return aIndex > bIndex ? 1 : -1;
+      }
+    });
 
-    for (attrName in node.attributes()) {
+    for (attrName in attrs) {
       var attrValue:String = node.get(attrName);
       if (attrName.startsWith('on:')) {
         var event = attrName.substr(3);
@@ -85,7 +106,7 @@ class TemplateBuilder {
         });
       } else if (attrName.startsWith('is:')) {
         var name = attrName.substr(3);
-        var attrStrings = attrValue.split(placeholder);
+        var attrStrings = placeholderReSplitter.split(attrValue);
         body.push(macro {
           var __b = new scout.html.part.BoolAttributePart(
             cast __e,
@@ -96,28 +117,24 @@ class TemplateBuilder {
         });
       } else if (attrName.startsWith('.')) {
         var name = attrName.substr(1);
-        var attrStrings = attrValue.split(placeholder);
+        var attrStrings = placeholderReSplitter.split(attrValue);
         body.push(macro {
           var __com = new scout.html.part.PropertyCommitter(
             cast __e,
             $v{name},
             $v{attrStrings}
           );
-          for (__p in __com.parts) {
-            __parts.push(__p);
-          }
+          __parts = __parts.concat(cast __com.parts);
         });
-      } else if (attrValue.indexOf(placeholder) >= 0) {
-        var attrStrings = attrValue.split(placeholder);
+      } else if (attrValue.indexOf(placeholderStart) >= 0) {
+        var attrStrings = placeholderReSplitter.split(attrValue);
         body.push(macro {
           var __com = new scout.html.part.AttributeCommitter(
             cast __e,
             $v{attrName},
             $v{attrStrings}
           );
-          for (__p in __com.parts) {
-            __parts.push(__p);
-          }
+          __parts = __parts.concat(cast __com.parts);
         });
       } else {
         body.push(macro __e.setAttribute($v{attrName}, $v{attrValue}));
@@ -143,12 +160,12 @@ class TemplateBuilder {
 
   static function handleDataNode(child:Xml) {
     function parseValue(value:String):Expr {
-      if (value.indexOf(placeholder) >= 0) {
-        var start = value.indexOf(placeholder);
-        var end = start + placeholder.length;
-        var parsed = value.substr(0, start);
-        var key = value.substr(start, end);
-        var rest = parseValue(value.substr(end));
+      if (placeholderRe.match(value)) {
+        var parsed = placeholderRe.matchedLeft();
+        // var key = value.substr(start);
+        // key = key.substr(0, key.indexOf('}}'));
+        // var end = parsed.length + key.length;
+        var rest = parseValue(placeholderRe.matchedRight());
         return macro {
           var __n = js.Browser.document.createTextNode($v{parsed});
           __e.appendChild(__n);
