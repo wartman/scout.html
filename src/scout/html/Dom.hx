@@ -28,6 +28,9 @@ class Dom {
     return Browser.document.createComment('');
   }
 
+  // This is a weird little workaround for custom elements
+  // until Haxe can handle real ones.
+
   // TODO: `extend` should be `extends`
   static public function registerElement(name:String, el:Class<CustomElement>, ?options:{ extend:String }) {
     if (options == null) { 
