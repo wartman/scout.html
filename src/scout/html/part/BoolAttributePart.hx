@@ -2,6 +2,7 @@ package scout.html.part;
 
 import js.html.Element;
 import scout.html.Part;
+import scout.html.ElementRef;
 
 class BoolAttributePart implements Part {
 
@@ -17,7 +18,7 @@ class BoolAttributePart implements Part {
   }
   public function get_value() return currentValue;
 
-  public function new(element:Element, name:String, strings:Array<String>) {
+  public function new(element:ElementRef, name:String, strings:Array<String>) {
     this.element = element;
     this.name = name;
     this.strings = strings;

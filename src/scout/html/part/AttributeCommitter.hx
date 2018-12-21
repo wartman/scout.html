@@ -10,7 +10,7 @@ class AttributeCommitter {
   public final parts:Array<AttributePart> = [];
   public var dirty:Bool = true;
 
-  public function new(element, name, strings) {
+  public function new(element:ElementRef, name:String, strings:Array<String>) {
     this.element = element;
     this.name = name;
     this.strings = strings;

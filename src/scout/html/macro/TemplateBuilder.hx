@@ -99,7 +99,7 @@ class TemplateBuilder {
         var event = attrName.substr(3);
         body.push(macro {
           var __ev = new scout.html.part.EventPart(
-            cast __e,
+            __e,
             $v{event}
           );
           __parts.push(__ev);
@@ -109,7 +109,7 @@ class TemplateBuilder {
         var attrStrings = placeholderReSplitter.split(attrValue);
         body.push(macro {
           var __b = new scout.html.part.BoolAttributePart(
-            cast __e,
+            __e,
             $v{name},
             $v{attrStrings}
           );
@@ -120,7 +120,7 @@ class TemplateBuilder {
         var attrStrings = placeholderReSplitter.split(attrValue);
         body.push(macro {
           var __com = new scout.html.part.PropertyCommitter(
-            cast __e,
+            __e,
             $v{name},
             $v{attrStrings}
           );
@@ -130,7 +130,7 @@ class TemplateBuilder {
         var attrStrings = placeholderReSplitter.split(attrValue);
         body.push(macro {
           var __com = new scout.html.part.AttributeCommitter(
-            cast __e,
+            __e,
             $v{attrName},
             $v{attrStrings}
           );
@@ -152,7 +152,7 @@ class TemplateBuilder {
       }
     }
     return macro {
-      var __e = js.Browser.document.createElement($v{name});
+      var __e = scout.html.Dom.createElement($v{name});
       $b{body}
       __e;
     }

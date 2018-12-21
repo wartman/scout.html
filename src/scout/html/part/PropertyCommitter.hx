@@ -1,16 +1,20 @@
 package scout.html.part;
 
-import js.html.Element;
-
-using Reflect;
+import scout.html.ElementRef;
 
 class PropertyCommitter extends AttributeCommitter {
 
   final single:Bool;
+  final ref:ElementRef;
 
-  public function new(element:Element, name:String, strings:Array<String>) {
-    super(element, name, strings);
+  public function new(ref:ElementRef, name:String, strings:Array<String>) {
+    super(ref, name, strings);
+    this.ref = ref;
     single = (strings.length == 2 && strings[0] == '' && strings[1] == '');
+    if (parts.length == 0) {
+      // For cases where we have a single value.
+      parts.push(createPart());
+    }
   }
 
   override function createPart() {
@@ -27,8 +31,7 @@ class PropertyCommitter extends AttributeCommitter {
   override function commit() {
     if (dirty) {
       dirty = false;
-      var obj:Dynamic = cast element;
-      obj.setField(name, prepare());
+      ref.setProperty(name, prepare());
     }
   }
 
