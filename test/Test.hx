@@ -1,8 +1,10 @@
 import js.html.InputElement;
+import js.html.Element;
 import js.html.Event;
 import js.Browser;
 import scout.html.Api.html;
-import scout.html.UpdatingElement;
+import scout.html.CustomElement;
+import scout.html.TemplateResult;
 
 using scout.html.Renderer;
 
@@ -40,17 +42,59 @@ class Todo {
 
 }
 
+@:noElement
+class UpdatingElement extends CustomElement {
+
+  public function new(el:Element) {
+    super(el);
+    update();
+  }
+
+  public function update() {
+    if (shouldRender()) {
+      var result = render();
+      if (result != null) {
+        Renderer.render(result, el);
+      }
+    }
+  }
+
+  public function shouldRender():Bool {
+    return true;
+  }
+
+  public function render():Null<TemplateResult> {
+    return null;
+  }
+
+}
+
+
 @:element('todo-input')
 class TodoInput extends UpdatingElement {
 
-  @:attr var className:String;
-  @:prop var label:String;
-  @:prop var value:String;
-  @:prop var onSubmit:(value:String)->Void;
+  @:isVar var label(default, set):String;
+  public function set_label(label) {
+    this.label = label;
+    update();
+    return label;
+  }
+  @:isVar var value(default, set):String;
+  public function set_value(value) {
+    this.value = value;
+    update();
+    return value;
+  }
+  @:isVar var onSubmit(default, set):(value:String)->Void;
+  public function set_onSubmit(onSubmit) {
+    this.onSubmit = onSubmit;
+    update();
+    return onSubmit;
+  }
 
   function handleChange(e:Event) {
     var input:InputElement = cast e.target;
-    properties.set('value', input.value);
+    value = input.value;
   }
 
   function handleSubmit(e:Event) {
@@ -62,7 +106,6 @@ class TodoInput extends UpdatingElement {
 
   override function render() return html('
     <input 
-      class="${className}"
       value="${value}"
       on:change="${handleChange}"
     />
@@ -77,7 +120,12 @@ class TodoInput extends UpdatingElement {
 @:element('todo-item', { extend: 'li' })
 class TodoItem extends UpdatingElement {
 
-  @:prop var todo:Todo;
+  @:isVar public var todo(default, set):Todo;
+  function set_todo(todo) {
+    this.todo = todo;
+    update();
+    return todo;
+  }
 
   public function removeItem() {
     remove();
@@ -129,7 +177,12 @@ class TodoItem extends UpdatingElement {
 @:element('todo-list')
 class TodoList extends UpdatingElement {
 
-  @:prop var todos:Array<Todo>;
+  @:isVar public var todos(default, set):Array<Todo>;
+  function set_todos(todos) {
+    this.todos = todos;
+    update();
+    return todos;
+  }
   var initValue:String = '';
 
   function makeTodo(value:String) {
