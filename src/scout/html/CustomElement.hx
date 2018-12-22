@@ -9,28 +9,31 @@ class CustomElement {
 
   public function new(el:Element) {
     this.el = el;
-    this.update();
   }
 
-  // public function committed() {
-  //   update();
-  // }
+  ///// FORWARDING (TEMP UNTIL WE CAN EXTEND HTMLELEMENT DIRECTLY) /////
 
-  function update() {
-    if (shouldRender()) {
-      var result = render();
-      if (result != null) {
-        Renderer.render(result, el);
-      }
-    }
-  }
+  public inline function getAttribute(name:String)
+    return el.getAttribute(name);
 
-  public function shouldRender():Bool {
-    return true;
-  }
+  public inline function setAttribute(name:String, value:String)
+    el.setAttribute(name, value);
+  
+  public inline function addEventListener(type, listener, capture:Bool = false)
+    el.addEventListener(type, listener, capture);
 
-  public function render():Null<TemplateResult> {
-    return null;
-  }
+  public inline function removeEventListener(type, listener, capture:Bool = false)
+    el.removeEventListener(type, listener, capture);
+  
+  public inline function querySelector(selectors)
+    return el.querySelector(selectors);
+
+  public inline function querySelectorAll(selectors)
+    return el.querySelectorAll(selectors);
+
+  public inline function remove()
+    el.remove();
+
+  ///// END /////
 
 }

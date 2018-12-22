@@ -12,9 +12,13 @@ class CustomElementBuilder {
     var cls = Context.getLocalClass().get();
     var path = cls.pack.concat([ cls.name ]);
     var fields = Context.getBuildFields();
-    var el = cls.meta.get().find(m -> m.name == ':element');
+    var meta = cls.meta.get();
+    var el = meta.find(m -> m.name == ':element');
     if (el == null || el.params.length == 0) {
-      Context.error('`@:element` declaration is required', cls.pos);
+      if (meta.exists(m -> m.name == ':noElement')) {
+        return fields;
+      }
+      Context.error('`@:element` declaration is required. To opt out of registering a custom element, use `@:noElement` meta.', cls.pos);
     }
     var build = el.params.length == 1 
       ? macro scout.html.Dom.registerElement(${el.params[0]}, $p{path})

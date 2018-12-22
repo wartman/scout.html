@@ -11,10 +11,6 @@ class PropertyCommitter extends AttributeCommitter {
     super(ref, name, strings);
     this.ref = ref;
     single = (strings.length == 2 && strings[0] == '' && strings[1] == '');
-    if (parts.length == 0) {
-      // For cases where we have a single value.
-      parts.push(createPart());
-    }
   }
 
   override function createPart() {

@@ -97,6 +97,9 @@ class TemplateBuilder {
       var attrValue:String = node.get(attrName);
       if (attrName.startsWith('on:')) {
         var event = attrName.substr(3);
+        if (!placeholderRe.match(attrValue)) {
+          Context.error('Only functions are allowed for `on:$event` attributes', Context.currentPos());
+        }
         body.push(macro {
           var __ev = new scout.html.part.EventPart(
             __e,
@@ -106,27 +109,38 @@ class TemplateBuilder {
         });
       } else if (attrName.startsWith('is:')) {
         var name = attrName.substr(3);
-        var attrStrings = placeholderReSplitter.split(attrValue);
-        body.push(macro {
-          var __b = new scout.html.part.BoolAttributePart(
-            __e,
-            $v{name},
-            $v{attrStrings}
-          );
-          __parts.push(__b);
-        });
+        if (!placeholderRe.match(attrValue)) {
+          body.push(macro {
+            var __truthy:Bool = !!$v{attrValue};
+            if (__truthy) __e.setAttribute($v{name}, '');
+          });
+        } else {
+          var attrStrings = placeholderReSplitter.split(attrValue);
+          body.push(macro {
+            var __b = new scout.html.part.BoolAttributePart(
+              __e,
+              $v{name},
+              $v{attrStrings}
+            );
+            __parts.push(__b);
+          });
+        }
       } else if (attrName.startsWith('.')) {
         var name = attrName.substr(1);
-        var attrStrings = placeholderReSplitter.split(attrValue);
-        body.push(macro {
-          var __com = new scout.html.part.PropertyCommitter(
-            __e,
-            $v{name},
-            $v{attrStrings}
-          );
-          __parts = __parts.concat(cast __com.parts);
-        });
-      } else if (attrValue.indexOf(placeholderStart) >= 0) {
+        if (!placeholderRe.match(attrValue)) {
+          body.push(macro __e.setProperty($v{name}, $v{attrValue}));
+        } else {
+          var attrStrings = placeholderReSplitter.split(attrValue);
+          body.push(macro {
+            var __com = new scout.html.part.PropertyCommitter(
+              __e,
+              $v{name},
+              $v{attrStrings}
+            );
+            __parts = __parts.concat(cast __com.parts);
+          });
+        }
+      } else if (placeholderRe.match(attrValue)) {
         var attrStrings = placeholderReSplitter.split(attrValue);
         body.push(macro {
           var __com = new scout.html.part.AttributeCommitter(
@@ -162,19 +176,13 @@ class TemplateBuilder {
     function parseValue(value:String):Expr {
       if (placeholderRe.match(value)) {
         var parsed = placeholderRe.matchedLeft();
-        // var key = value.substr(start);
-        // key = key.substr(0, key.indexOf('}}'));
-        // var end = parsed.length + key.length;
         var rest = parseValue(placeholderRe.matchedRight());
         return macro {
           var __n = js.Browser.document.createTextNode($v{parsed});
           __e.appendChild(__n);
-          var __nc = scout.html.Dom.createMarker();
-          __e.appendChild(__nc);
-          __e.appendChild(scout.html.Dom.createMarker());
           var __p = new scout.html.part.NodePart();
           __parts.push(__p);
-          __p.insertAfterNode(__nc);
+          __p.appendInto(__e);
           ${rest};
           __e;
         }

@@ -44,8 +44,7 @@ abstract ElementRef(ElementRefImpl) {
 
   public inline function setProperty(name:String, value:Dynamic) {
     if (this.custom != null) {
-      Reflect.setField(this.custom, name, value);
-      @:privateAccess this.custom.update(); // temp
+      Reflect.setProperty(this.custom, name, value);
     } else {
       Reflect.setField(this.el, name, value);  
     }

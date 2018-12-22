@@ -16,10 +16,9 @@ class Dom {
     ?endNode:Node
   ) {
     var node = startNode;
-    while (node != endNode) {
+    while (node != endNode && node != null) {
       var n = node.nextSibling;
-      if (n == null) return;
-      container.removeChild(n);
+      container.removeChild(node);
       node = n;
     }
   }

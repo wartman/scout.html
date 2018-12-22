@@ -128,7 +128,7 @@ class NodePart implements Part {
     if (startNode == null) startNode = this.startNode;
     removeNodes(
       startNode.parentNode, 
-      startNode.nextSibling, 
+      startNode.nextSibling,
       endNode
     );
   }
