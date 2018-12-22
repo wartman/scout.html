@@ -1,6 +1,7 @@
 package scout.html;
 
 import js.html.Element;
+import js.html.Node;
 
 @:autoBuild(scout.html.macro.CustomElementBuilder.build())
 class CustomElement {
@@ -30,6 +31,10 @@ class CustomElement {
 
   public inline function querySelectorAll(selectors)
     return el.querySelectorAll(selectors);
+
+  public inline function appendChild(child:Node):Node {
+    return el.appendChild(child);
+  }
 
   public inline function remove()
     el.remove();

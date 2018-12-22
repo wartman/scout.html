@@ -34,15 +34,22 @@ abstract ElementRef(ElementRefImpl) {
     return cast this.el;
   }
 
-  public inline function appendChild(el:Node) {
-    this.el.appendChild(el);
+  public function appendChild(child:Node) {
+    if (this.custom != null) {
+      return this.custom.appendChild(child);
+    }
+    return this.el.appendChild(child);
   }
 
-  public inline function setAttribute(name:String, value:String) {
-    this.el.setAttribute(name, value);
+  public function setAttribute(name:String, value:String) {
+    if (this.custom != null) {
+      this.custom.setAttribute(name, value);
+    } else {
+      this.el.setAttribute(name, value);
+    }
   }
 
-  public inline function setProperty(name:String, value:Dynamic) {
+  public function setProperty(name:String, value:Dynamic) {
     if (this.custom != null) {
       Reflect.setProperty(this.custom, name, value);
     } else {

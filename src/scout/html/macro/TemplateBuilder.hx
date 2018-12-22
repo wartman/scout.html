@@ -43,6 +43,10 @@ class TemplateBuilder {
     return parts;
   }
 
+  static function getId() {
+    return id += 1;
+  }
+
   static function secondPass(str:String, values:Array<Expr>) {
     var root = Xml.parse(str);
     var exprs:Array<Expr> = [];
@@ -51,11 +55,11 @@ class TemplateBuilder {
       case PCData: exprs.push(handleDataNode(node));
       default:
     }
-    var name = 'TemplateFactory_' + (Math.ceil(Math.random() * 1000));
+    var name = 'TemplateFactory_' + getId();
     Context.defineModule('scout.html.${name}', [ macro class $name implements scout.html.TemplateFactory {
 
       public final id:String = $v{name};
-      public final debug:String = $v{str};
+      // public final debug:String = $v{str};
 
       public function new() {}
 
