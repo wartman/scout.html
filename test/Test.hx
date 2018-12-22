@@ -102,10 +102,7 @@ class TodoItem extends UpdatingElement {
   override function shouldRender() {
     return todo != null;
   }
-
-  // Something is wrong with the NodePart, I think, as it
-  // doesn't properally remove an old Node (at least with
-  // TemplateResults). Sure do need tests :V
+  
   override function render() return html('
     ${if (todo.editing) html('
       <todo-input
