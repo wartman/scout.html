@@ -7,6 +7,8 @@ import js.html.Node;
 class CustomElement {
 
   public final el:Element;
+  public static var elementName(get, never):String;
+  public static function get_elementName() return '';
 
   public function new(el:Element) {
     this.el = el;

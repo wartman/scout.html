@@ -1,5 +1,6 @@
 package scout.html;
 
+import js.html.Element;
 import js.Browser;
 import js.html.Node;
 
@@ -25,6 +26,24 @@ class Dom {
 
   public static function createMarker() {
     return Browser.document.createComment('');
+  }
+
+  public static function setElementIdentifiers(element:Element, s:String) {
+    var parts = s.split('.');
+    var classList:Array<String> = [];
+    for (part in parts) {
+      part = StringTools.trim(part);
+      if (part.indexOf('#') == 0) {
+        var id = part.substr(1);
+        element.setAttribute('id', id);
+      } else {
+        classList.push(part);
+      }
+    }
+    if (classList.length > 0) {
+      var cls = classList.join(' ');
+      element.setAttribute('class', cls);
+    }
   }
 
   // This is a weird little workaround for custom elements

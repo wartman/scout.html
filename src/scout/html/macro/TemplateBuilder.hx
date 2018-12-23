@@ -20,7 +20,7 @@ class TemplateBuilder {
       case EConst(CString(s)):
         var expr = s.formatString(tpl.pos);
         var values:Array<Expr> = [];
-        var str = firstPass(expr, values);
+        var str = firstPass(cast expr, values);
         secondPass(str, values);
       default:
         // macro @:pos(tpl.pos) new scout.html.TemplateResult(${tpl}, []);

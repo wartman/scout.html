@@ -3,6 +3,7 @@ import js.html.Element;
 import js.html.Event;
 import js.Browser;
 import scout.html.Api.html;
+import scout.html.dsl.Api.build;
 import scout.html.CustomElement;
 import scout.html.TemplateResult;
 
@@ -11,11 +12,14 @@ using scout.html.Renderer;
 class Test {
 
   public static function main() {
-    var header = (title, id, className) -> html('
-      <header id="${id}" className="${className}">
-        <h3>${title}</h3>
-      </header>
-    ');
+    var header = (title, id, className) -> build({
+      @header(className) {
+        id = id;
+        @h3('${className}-title.${className}-title--bar') {
+          title;
+        }
+      }
+    }); 
     var input = (title:String, todos:Array<Todo>) -> html('
       ${header(title, 'MainHeader', 'header')}
       <todo-list .todos="${todos}" />
@@ -151,26 +155,48 @@ class TodoItem extends UpdatingElement {
     return todo != null;
   }
   
-  override function render() return html('
-    ${if (todo.editing) html('
-      <todo-input
-        className="edit"
-        .label="update"
-        .value="${todo.content}"
-        .onSubmit="${updateContent}" 
-      />
-    ') else html ('
-      <input 
-        class="toggle" 
-        type="checkbox" 
-        on:change="${toggleComplete}"
-        is:checked="${todo.completed}" 
-      />
-      <label>${todo.content}</label>
-      <button class="edit" on:click="${_ -> toggleEditing()}">Edit</button>
-      <button class="destroy" on:click="${_ -> removeItem()}">Remove</button>
-    ')}
-  ');
+  override function render() return build({
+    if (todo.editing) {
+      @todo.input('edit') {
+        props.label = 'update';
+        props.value = todo.content;
+        props.onSubmit = updateContent;
+      }
+    } else {
+      @input('todo-toggle') {
+        type = 'checkbox';
+        on.change = toggleComplete;
+        is.checked = todo.completed;
+      }
+      @label('todo-label') todo.content;
+      @button('button.todo-button.button--edit') {
+        on.click = _ -> toggleEditing();
+        'Edit';
+      }
+      @button('button.todo-button.button--destroy', on.click = _ -> removeItem()) 'Remove';
+    }
+  });
+
+  // override function render() return html('
+  //   ${if (todo.editing) html('
+  //     <todo-input
+  //       className="edit"
+  //       .label="update"
+  //       .value="${todo.content}"
+  //       .onSubmit="${updateContent}" 
+  //     />
+  //   ') else html ('
+  //     <input 
+  //       class="toggle" 
+  //       type="checkbox" 
+  //       on:change="${toggleComplete}"
+  //       is:checked="${todo.completed}" 
+  //     />
+  //     <label>${todo.content}</label>
+  //     <button class="edit" on:click="${_ -> toggleEditing()}">Edit</button>
+  //     <button class="destroy" on:click="${_ -> removeItem()}">Remove</button>
+  //   ')}
+  // ');
 
 }
 
@@ -198,11 +224,24 @@ class TodoList extends UpdatingElement {
     return todos != null;
   }
 
-  override function render() return html('
-    <todo-input .label="create" .value="${initValue}" .onSubmit="${makeTodo}" />
-    <ul class="todo-list">
-      ${[ for (todo in todos) html('<todo-item .todo="${todo}" />') ]}
-    </ul>
-  ');
+  override function render() return build({
+    @todo.input {
+      props.label = 'create';
+      props.value = initValue;
+      props.onSubmit = makeTodo;
+    }
+    @ul('#App.todo-list') {
+      for (todo in todos) {
+        @todo.item props.todo = todo;
+      }
+    }
+  });
+
+  // override function render() return html('
+  //   <todo-input .label="create" .value="${initValue}" .onSubmit="${makeTodo}" />
+  //   <ul class="todo-list">
+  //     ${[ for (todo in todos) html('<todo-item .todo="${todo}" />') ]}
+  //   </ul>
+  // ');
 
 }

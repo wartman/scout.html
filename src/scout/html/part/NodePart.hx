@@ -133,5 +133,4 @@ class NodePart implements Part {
     );
   }
 
-
 }

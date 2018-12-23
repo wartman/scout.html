@@ -25,9 +25,15 @@ class CustomElementBuilder {
       : macro scout.html.Dom.registerElement(${el.params[0]}, $p{path}, ${el.params[1]});
 
     fields = fields.concat((macro class {
+      
+      override static function get_elementName() {
+        return ${el.params[0]};
+      }
+
       public static function __init__() {
         ${build};
       }
+      
     }).fields);
 
     return fields;
