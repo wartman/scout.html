@@ -24,9 +24,14 @@ class Generator {
   }
 
   public function generate() {
+    var pack = Context.getLocalClass().get().pack;
     var body = node(root);
     var name = 'DslTemplateFactory_' + getId();
-    Context.defineModule('scout.html.${name}', [ macro class $name implements scout.html.TemplateFactory {
+    var typePath:TypePath = {
+      pack: pack,
+      name: name
+    };
+    Context.defineModule(pack.concat([ name ]).join('.'), [ macro class $name implements scout.html.TemplateFactory {
 
       public final id:String = $v{name};
 
@@ -41,7 +46,7 @@ class Generator {
 
     } ], Context.getLocalImports());
       
-    return macro new scout.html.TemplateResult(new scout.html.$name(), [ $a{values} ]);
+    return macro new scout.html.TemplateResult(new $typePath(), [ $a{values} ]);
   }
   
   function yieldAttr(name:String, expr:Expr, hasPart:Bool = false):Expr {
