@@ -2,8 +2,7 @@ import js.html.InputElement;
 import js.html.Element;
 import js.html.Event;
 import js.Browser;
-import scout.html.Api.html;
-import scout.html.dsl.Api.build;
+import scout.html.Api.*;
 import scout.html.CustomElement;
 import scout.html.TemplateResult;
 
@@ -25,7 +24,8 @@ class Test {
       <todo-list .todos="${todos}" />
     ');
     input('Title', [
-      new Todo('0', 'test', false)
+      new Todo(0, 'test', false),
+      new Todo(1, 'test', true)
     ]).render(Browser.document.getElementById('root'));
   }
 
@@ -33,7 +33,7 @@ class Test {
 
 class Todo {
   
-  public var id:String;
+  public var id:Int;
   public var content:String;
   public var completed:Bool;
   public var editing:Bool = false;
@@ -72,7 +72,6 @@ class UpdatingElement extends CustomElement {
   }
 
 }
-
 
 @:element('todo-input')
 class TodoInput extends UpdatingElement {
@@ -157,7 +156,7 @@ class TodoItem extends UpdatingElement {
   
   override function render() return build({
     if (todo.editing) {
-      @todo.input('edit') {
+      @Test.TodoInput('edit') {
         props.label = 'update';
         props.value = todo.content;
         props.onSubmit = updateContent;
@@ -213,7 +212,7 @@ class TodoList extends UpdatingElement {
 
   function makeTodo(value:String) {
     todos.push(new Todo(
-      Std.string(todos.length + 1),
+      todos.length + 1,
       value,
       false
     ));
@@ -225,14 +224,17 @@ class TodoList extends UpdatingElement {
   }
 
   override function render() return build({
-    @todo.input {
+    @Test.TodoInput {
       props.label = 'create';
       props.value = initValue;
       props.onSubmit = makeTodo;
     }
     @ul('#App.todo-list') {
       for (todo in todos) {
-        @todo.item props.todo = todo;
+        @Test.TodoItem {
+          id = 'Todo-${todo.id}';
+          props.todo = todo;
+        }
       }
     }
   });

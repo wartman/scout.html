@@ -6,6 +6,11 @@ class Api {
     return scout.html.macro.TemplateBuilder.parse(e);
   }
 
+  public macro static function build(e) {
+    var node = scout.html.dsl.Parser.parse(e);
+    return new scout.html.dsl.Generator(node).generate();
+  }
+
   #if !macro
     public static function render(result, container) {
       return Renderer.render(result, container);

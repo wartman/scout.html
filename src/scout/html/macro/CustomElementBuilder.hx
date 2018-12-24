@@ -26,7 +26,7 @@ class CustomElementBuilder {
 
     fields = fields.concat((macro class {
       
-      override static function get_elementName() {
+      override public static function get_elementName() {
         return ${el.params[0]};
       }
 

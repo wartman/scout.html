@@ -39,7 +39,7 @@ class Generator {
         return new scout.html.Template(id, cast $i{NODE}, $i{PARTS});
       }
 
-    } ]);
+    } ], Context.getLocalImports());
       
     return macro new scout.html.TemplateResult(new scout.html.$name(), [ $a{values} ]);
   }
@@ -126,8 +126,8 @@ class Generator {
     var name = tag.value;
     var body = children.map(node);
     var create = kind == KindTag
-      ? macro scout.html.Dom.createElement($v{name.split('.').join('-')})
-      : macro scout.html.Dom.createElement($i{name}.elementName);
+      ? macro @:pos(tag.pos) scout.html.Dom.createElement($v{name.split('.').join('-')})
+      : macro @:pos(tag.pos) scout.html.Dom.createElement($p{name.split('.')}.get_elementName());
     return macro {
       var $NODE = ${create};
       $b{body};
@@ -145,6 +145,7 @@ class Generator {
       var parsedName = parts.join('-');
       switch (prefix) {
         case 'on':
+          values.push(value);
           return macro {
             var __part = new scout.html.part.EventPart(
               $i{NODE},
@@ -154,12 +155,13 @@ class Generator {
           }
         case 'is':
           if (!hasPart) {
-            macro {
+            return macro {
               var __truthy:Bool = !!${value};
               if (__truthy) $i{NODE}.setAttribute($v{parsedName}, '');
             } 
           } else {
-            macro {
+            values.push(value);
+            return macro {
               var __part = new scout.html.part.BoolAttributePart(
                 $i{NODE},
                 $v{parsedName},
