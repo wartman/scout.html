@@ -5,6 +5,7 @@ import js.Browser;
 import scout.html.Part;
 import scout.html.Template;
 import scout.html.TemplateResult;
+import scout.html.Component;
 import scout.html.Dom.*;
 
 class NodePart implements Part {
@@ -52,11 +53,15 @@ class NodePart implements Part {
   public function commit() {
     var value:Dynamic = pendingValue;
     switch (Type.getClass(value)) {
-      case TemplateResult: commitTemplateResult(value);
+      case TemplateResultImpl: commitTemplateResult(value);
       case Node: commitNode(value);
       // ???? how get iterable
       case Array: commitIterable(value);
-      default: if (value != currentValue) commitText(value);
+      default:
+        if (Std.is(value, Component)) 
+          commitComponent(value); 
+        else if (value != currentValue) 
+          commitText(value);
     }
   }
 
@@ -87,6 +92,10 @@ class NodePart implements Part {
       itemParts = itemParts.splice(0, partIndex);
       clear(itemPart != null ? itemPart.endNode : null);
     }
+  }
+
+  function commitComponent(value:Component) {
+    commitTemplateResult(value._scout_render());
   }
 
   function commitTemplateResult(value:TemplateResult) {
@@ -132,6 +141,5 @@ class NodePart implements Part {
       endNode
     );
   }
-
 
 }

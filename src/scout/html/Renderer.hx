@@ -24,4 +24,8 @@ class Renderer {
     part.commit();
   }
 
+  public static function renderComponent(result:Component, container:Element) {
+    return render(result, container);
+  }
+
 }

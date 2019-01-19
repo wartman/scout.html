@@ -1,35 +1,28 @@
 import js.html.InputElement;
-import js.html.Element;
 import js.html.Event;
 import js.Browser;
 import scout.html.Api.html;
-import scout.html.CustomElement;
 import scout.html.TemplateResult;
+import scout.html.Component;
 
 using scout.html.Renderer;
 
 class Test {
 
   public static function main() {
-    var header = (title, id, className) -> html('
-      <header id="${id}" className="${className}">
-        <h3>${title}</h3>
-      </header>
-    ');
-    var input = (title:String, todos:Array<Todo>) -> html('
-      ${header(title, 'MainHeader', 'header')}
-      <todo-list .todos="${todos}" />
-    ');
-    input('Title', [
-      new Todo('0', 'test', false)
-    ]).render(Browser.document.getElementById('root'));
+    var todos = new TodoCollection([
+      new Todo(0, 'Do it', false),
+      new Todo(1, 'Do it also', false)
+    ]);
+    new TodoList({ todos: todos })
+      .renderComponent(Browser.document.getElementById('root'));
   }
 
 }
 
 class Todo {
   
-  public var id:String;
+  public var id:Int;
   public var content:String;
   public var completed:Bool;
   public var editing:Bool = false;
@@ -42,55 +35,38 @@ class Todo {
 
 }
 
-@:noElement
-class UpdatingElement extends CustomElement {
+class TodoCollection {
 
-  public function new(el:Element) {
-    super(el);
-    update();
+  public final todos:Array<Todo>;
+  final actions:Array<()->Void> = [];
+
+  public function new(todos:Array<Todo>) {
+    this.todos = todos;
   }
 
-  public function update() {
-    if (shouldRender()) {
-      var result = render();
-      if (result != null) {
-        Renderer.render(result, el);
-      }
+  public function add(todo:Todo) {
+    todos.push(todo);
+    for (todo in todos) {
+      todo.editing = false;
     }
+    update();
+  } 
+
+  public function subscribe(action:()->Void) {
+    actions.push(action);
   }
 
-  public function shouldRender():Bool {
-    return true;
-  }
-
-  public function render():Null<TemplateResult> {
-    return null;
+  function update() {
+    for (action in actions) action();
   }
 
 }
 
+class TodoInput extends Component {
 
-@:element('todo-input')
-class TodoInput extends UpdatingElement {
-
-  @:isVar var label(default, set):String;
-  public function set_label(label) {
-    this.label = label;
-    update();
-    return label;
-  }
-  @:isVar var value(default, set):String;
-  public function set_value(value) {
-    this.value = value;
-    update();
-    return value;
-  }
-  @:isVar var onSubmit(default, set):(value:String)->Void;
-  public function set_onSubmit(onSubmit) {
-    this.onSubmit = onSubmit;
-    update();
-    return onSubmit;
-  }
+  @:prop var value:String;
+  @:prop var label:String;
+  @:prop var onSubmit:(value:String)->Void;
 
   function handleChange(e:Event) {
     var input:InputElement = cast e.target;
@@ -117,92 +93,76 @@ class TodoInput extends UpdatingElement {
 
 }
 
-@:element('todo-item', { extend: 'li' })
-class TodoItem extends UpdatingElement {
+class TodoItem extends Component {
 
-  @:isVar public var todo(default, set):Todo;
-  function set_todo(todo) {
-    this.todo = todo;
-    update();
-    return todo;
-  }
-
-  public function removeItem() {
-    remove();
-  }
-
-  function toggleComplete(e:Event) {
-    todo.completed = !todo.completed;
-    update();
-  }
-
-  function updateContent(value:String) {
-    todo.content = value;
-    todo.editing = false;
-    update();
-  }
+  @:prop var todo:Todo;
 
   function toggleEditing() {
     todo.editing = true;
     update();
   }
 
-  override function shouldRender() {
-    return todo != null;
+  function removeItem() {
+
   }
-  
+
   override function render() return html('
-    ${if (todo.editing) html('
-      <todo-input
-        className="edit"
-        .label="update"
-        .value="${todo.content}"
-        .onSubmit="${updateContent}" 
-      />
-    ') else html ('
-      <input 
-        class="toggle" 
-        type="checkbox" 
-        on:change="${toggleComplete}"
-        is:checked="${todo.completed}" 
-      />
-      <label>${todo.content}</label>
-      <button class="edit" on:click="${_ -> toggleEditing()}">Edit</button>
-      <button class="destroy" on:click="${_ -> removeItem()}">Remove</button>
-    ')}
+    <li class="todo-item">
+      ${ if (todo.editing) new TodoInput({
+        value: todo.content,
+        label: 'Update',
+        onSubmit: value -> {
+          todo.editing = false;
+          todo.content = value;
+          update();
+        }
+      }) else html(' 
+        <label>${todo.content}</label>
+        <button class="edit" on:click="${_ -> toggleEditing()}">Edit</button>
+        <button class="destroy" on:click="${_ -> removeItem()}">Remove</button>
+      ') }
+    </li>
   ');
 
 }
 
-@:element('todo-list')
-class TodoList extends UpdatingElement {
+class UpdatingList extends Component {
 
-  @:isVar public var todos(default, set):Array<Todo>;
-  function set_todos(todos) {
-    this.todos = todos;
-    update();
-    return todos;
-  }
-  var initValue:String = '';
+  @:prop var className:String;
+  @:prop var todos:TodoCollection;
 
-  function makeTodo(value:String) {
-    todos.push(new Todo(
-      Std.string(todos.length + 1),
-      value,
-      false
-    ));
-    update();
-  }
-
-  override function shouldRender() {
-    return todos != null;
+  @:init function watchTodos() {
+    todos.subscribe(() -> update());
   }
 
   override function render() return html('
-    <todo-input .label="create" .value="${initValue}" .onSubmit="${makeTodo}" />
-    <ul class="todo-list">
-      ${[ for (todo in todos) html('<todo-item .todo="${todo}" />') ]}
+    <ul class="${className}">
+      ${[ for (todo in todos.todos) new TodoItem({ todo: todo }) ]}
     </ul>
   ');
+
+}
+
+class TodoList extends Component {
+
+  @:prop var todos:TodoCollection;
+
+  override function render():TemplateResult return [
+    html('<header>
+      <h1>Todo</h1>
+    </header>'),
+    new TodoInput({
+      value: '',
+      label: 'Create',
+      onSubmit: (value:String) -> {
+        var todo = new Todo(todos.todos.length, value, false);
+        todos.add(todo);
+      }
+    }),
+    new UpdatingList({
+      className: 'todo-items',
+      todos: todos
+    })
+  ];
 
 }

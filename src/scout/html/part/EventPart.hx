@@ -3,7 +3,6 @@ package scout.html.part;
 import js.html.Element;
 import js.html.Event;
 import scout.html.Part;
-import scout.html.ElementRef;
 
 class EventPart implements Part {
 
@@ -19,7 +18,7 @@ class EventPart implements Part {
   }
   public function get_value() return currentValue;
 
-  public function new(element:ElementRef, event:String) {
+  public function new(element:Element, event:String) {
     this.element = element;
     this.event = event;
     boundEvent = e -> handleEvent(e);
