@@ -7,19 +7,19 @@ class Component {
 
   static var _scout_componentIds:Int = 0;
   public final _scout_cid:Int = _scout_componentIds++;
+  public final _scout_properties:Map<String, Dynamic> = new Map();
   var _scout_template:Template;
-  final properties:Map<String, Dynamic> = new Map();
   var _scout_silent:Bool = false;
   
   public function setProperty(name:String, value:Dynamic) {
-    properties.set(name, value);
+    _scout_properties.set(name, value);
     if (!_scout_silent) {
       update();
     }
   }
 
   public function getProperty(name:String) {
-    return properties.get(name);
+    return _scout_properties.get(name);
   }
 
   public function update(?props:Map<String, Dynamic>) {

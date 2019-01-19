@@ -95,7 +95,15 @@ class NodePart implements Part {
   }
 
   function commitComponent(value:Component) {
-    commitTemplateResult(value._scout_render());
+    var comp = value;
+    var res = value._scout_render();
+    switch (Std.instance(currentValue, Template)) {
+      case instance if (instance != null && instance.id == res.factory.id):
+        commitTemplateResult(res);
+        @:privateAccess comp._scout_template = currentValue;
+      default:
+        commitTemplateResult(res);
+    }
   }
 
   function commitTemplateResult(value:TemplateResult) {
