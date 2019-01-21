@@ -49,6 +49,8 @@ class EventPart implements Part {
     // this.value = newListener;
     // this._pendingValue = noChange;
     currentValue = pendingValue;
+    // ... er
+    // this looks odd?
     element.removeEventListener(event, boundEvent);
     element.addEventListener(event, boundEvent);
     pendingValue = null;

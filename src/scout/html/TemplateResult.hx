@@ -19,8 +19,8 @@ abstract TemplateResult(TemplateResultImpl) {
     this = new TemplateResultImpl(factory, values);
   }
 
-  @:from public static function ofComponent(component:Component) {
-    return component._scout_render();
+  @:from public static function ofRenderable(renderable:Renderable) {
+    return new TemplateResult(new ValueTemplateFactory(), [ renderable ]);
   }
 
   @:from public static function ofArray(children:Array<Dynamic>) {

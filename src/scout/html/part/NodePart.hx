@@ -5,7 +5,7 @@ import js.Browser;
 import scout.html.Part;
 import scout.html.Template;
 import scout.html.TemplateResult;
-import scout.html.Component;
+import scout.html.Renderable;
 import scout.html.Dom.*;
 
 class NodePart implements Part {
@@ -58,8 +58,8 @@ class NodePart implements Part {
       // ???? how get iterable
       case Array: commitIterable(value);
       default:
-        if (Std.is(value, Component)) 
-          commitComponent(value); 
+        if (Std.is(value, Renderable)) 
+          commitRenderable(value); 
         else if (value != currentValue) 
           commitText(value);
     }
@@ -94,15 +94,17 @@ class NodePart implements Part {
     }
   }
 
-  function commitComponent(value:Component) {
-    var comp = value;
-    var res = value._scout_render();
-    switch (Std.instance(currentValue, Template)) {
-      case instance if (instance != null && instance.id == res.factory.id):
-        commitTemplateResult(res);
-        @:privateAccess comp._scout_template = currentValue;
-      default:
-        commitTemplateResult(res);
+  function commitRenderable(value:Renderable) {
+    var res = value.render();
+    if (res == null) {
+      currentValue = null;
+      clear();
+    } else {
+      commitTemplateResult(res);
+      if (Std.is(value, Updateable) && Std.is(currentValue, Template)) {
+        var updateable:Updateable = cast value;
+        updateable.setTemplate(currentValue);
+      }
     }
   }
 

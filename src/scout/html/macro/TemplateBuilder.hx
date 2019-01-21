@@ -48,6 +48,7 @@ class TemplateBuilder {
   }
 
   static function secondPass(str:String, values:Array<Expr>) {
+    // var pack = Context.getLocalClass().get().pack;
     var root = Xml.parse(str);
     var exprs:Array<Expr> = [];
     for (node in root) switch (node.nodeType) {
