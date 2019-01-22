@@ -32,7 +32,7 @@ abstract TemplateResult(TemplateResultObject) from TemplateResultObject {
   }
 
   @:from public static function ofArray(children:Array<Dynamic>) {
-    return new TemplateResult(new ValueTemplateFactory(), [ children ]);
+    return new TemplateResult(new SimpleTemplateFactory(), [ children ]);
   }
 
 }

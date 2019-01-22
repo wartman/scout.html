@@ -56,14 +56,14 @@ class NodePart implements Part {
       commitTemplateResult(value);
     } else if (Std.is(value, Node)) {
       commitNode(value);
-    } else if (Std.is(value, Array)) {
+    } else if (Std.is(value, Array) || Reflect.hasField(value, 'iterator')) {
       commitIterable(value);
     } else if (value != currentValue) { 
       commitText(value);
     }
   }
 
-  function commitIterable(value:Array<Dynamic>) {
+  function commitIterable(value:Iterable<Dynamic>) {
     if (!Std.is(currentValue, Array)) {
       currentValue = [];
       clear();
@@ -105,6 +105,7 @@ class NodePart implements Part {
 
   function commitTemplateResult(value:TemplateResult) {
     var factory = value.getFactory();
+    
     switch (Std.instance(currentValue, Template)) {
       case instance if (instance != null && instance.id == factory.getId()):
         currentValue.update(value.getValues());
@@ -115,6 +116,11 @@ class NodePart implements Part {
         commitNode(fragment);
         currentValue = template;
     }
+
+    // Note: this is done here to ensure that the
+    //       TemplateUpdater always has the correct
+    //       template. This gets tricky when dealing
+    //       with an array of TemplateResults.
     if (Std.is(value, TemplateUpdater)) {
       var com:TemplateUpdater = cast value;
       com.setTemplate(currentValue);

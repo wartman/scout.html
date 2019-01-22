@@ -4,8 +4,7 @@ import js.Browser;
 import scout.html.Api.html;
 import scout.html.TemplateResult;
 import scout.html.Component;
-
-using scout.html.Renderer;
+import scout.html.Renderer;
 
 class Test {
 
@@ -14,8 +13,7 @@ class Test {
       new Todo(0, 'Do it', false),
       new Todo(1, 'Do it also', false)
     ]);
-    new TodoList({ todos: todos })
-      .renderComponent(Browser.document.getElementById('root'));
+    Renderer.render(new TodoList({ todos: todos }), Browser.document.getElementById('root'));
   }
 
 }

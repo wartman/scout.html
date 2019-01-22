@@ -4,7 +4,7 @@ import js.html.Element;
 import js.Browser;
 import scout.html.part.NodePart;
 
-class ValueTemplateFactory implements TemplateFactory {
+class SimpleTemplateFactory implements TemplateFactory {
 
   static var _scout_ids:Int = 0;
 
