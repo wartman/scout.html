@@ -59,16 +59,15 @@ class TemplateBuilder {
     var name = 'TemplateFactory_' + getId();
     Context.defineModule('scout.html.${name}', [ macro class $name implements scout.html.TemplateFactory {
 
-      public final id:String = $v{name};
-      // public final debug:String = $v{str};
-
       public function new() {}
 
-      public function get() {
+      public function getId() return $v{name};
+
+      public function getTemplate() {
         var __parts:Array<Null<scout.html.Part>> = [];
         var __e = js.Browser.document.createDocumentFragment();
         $b{exprs};
-        var __t = new scout.html.Template(id, cast __e, __parts);
+        var __t = new scout.html.Template(getId(), cast __e, __parts);
         return __t;
       }
 

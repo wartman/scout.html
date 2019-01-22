@@ -5,7 +5,7 @@ import js.Browser;
 import scout.html.Part;
 import scout.html.Template;
 import scout.html.TemplateResult;
-import scout.html.Renderable;
+import scout.html.TemplateUpdater;
 import scout.html.Dom.*;
 
 class NodePart implements Part {
@@ -52,16 +52,14 @@ class NodePart implements Part {
 
   public function commit() {
     var value:Dynamic = pendingValue;
-    switch (Type.getClass(value)) {
-      case TemplateResultImpl: commitTemplateResult(value);
-      case Node: commitNode(value);
-      // ???? how get iterable
-      case Array: commitIterable(value);
-      default:
-        if (Std.is(value, Renderable)) 
-          commitRenderable(value); 
-        else if (value != currentValue) 
-          commitText(value);
+    if (Std.is(value, TemplateResultObject)) {
+      commitTemplateResult(value);
+    } else if (Std.is(value, Node)) {
+      commitNode(value);
+    } else if (Std.is(value, Array)) {
+      commitIterable(value);
+    } else if (value != currentValue) { 
+      commitText(value);
     }
   }
 
@@ -70,9 +68,11 @@ class NodePart implements Part {
       currentValue = [];
       clear();
     }
+    
     var itemParts:Array<NodePart> = cast currentValue;
     var partIndex = 0;
     var itemPart:NodePart = null;
+    
     for (item in value) {
       itemPart = itemParts[partIndex];
       if (itemPart == null) {
@@ -88,37 +88,36 @@ class NodePart implements Part {
       itemPart.commit();
       partIndex++;
     }
-    if (partIndex < itemParts.length) {
-      itemParts = itemParts.splice(0, partIndex);
-      clear(itemPart != null ? itemPart.endNode : null);
-    }
-  }
 
-  function commitRenderable(value:Renderable) {
-    var res = value.render();
-    if (res == null) {
-      currentValue = null;
-      clear();
-    } else {
-      commitTemplateResult(res);
-      if (Std.is(value, Updateable) && Std.is(currentValue, Template)) {
-        var updateable:Updateable = cast value;
-        updateable.setTemplate(currentValue);
+    if (partIndex < itemParts.length) {
+      for (i in partIndex...itemParts.length) {
+        itemParts.remove(itemParts[i]);
+      }
+      if (itemPart == null) {
+        clear();
+      } else {
+        clear(itemPart.endNode);
       }
     }
+
+    value = itemParts;
   }
 
   function commitTemplateResult(value:TemplateResult) {
-    var factory = value.factory;
+    var factory = value.getFactory();
     switch (Std.instance(currentValue, Template)) {
-      case instance if (instance != null && instance.id == factory.id):
-        currentValue.update(value.values);
+      case instance if (instance != null && instance.id == factory.getId()):
+        currentValue.update(value.getValues());
       default:
-        var template = value.factory.get();
+        var template = factory.getTemplate();
         var fragment = template.el;
-        template.update(value.values);
+        template.update(value.getValues());
         commitNode(fragment);
         currentValue = template;
+    }
+    if (Std.is(value, TemplateUpdater)) {
+      var com:TemplateUpdater = cast value;
+      com.setTemplate(currentValue);
     }
   }
 

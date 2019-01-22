@@ -6,6 +6,8 @@ import haxe.macro.Context;
 
 using Lambda;
 
+// FOR TESTING ONLY
+
 class ComponentBuilder {
 
   public static function build() {

@@ -26,6 +26,7 @@ class Todo {
   public var content:String;
   public var completed:Bool;
   public var editing:Bool = false;
+  public var collection:TodoCollection;
 
   public function new(id, content, completed) {
     this.id = id;
@@ -33,24 +34,37 @@ class Todo {
     this.completed = completed;
   }
 
+  public function remove() {
+    if (collection != null) {
+      collection.remove(this);
+    }
+  }
+
 }
 
 class TodoCollection {
 
-  public final todos:Array<Todo>;
+  public final todos:Array<Todo> = [];
   final actions:Array<()->Void> = [];
 
   public function new(todos:Array<Todo>) {
-    this.todos = todos;
+    for (todo in todos) add(todo);
   }
 
   public function add(todo:Todo) {
+    todo.collection = this;
     todos.push(todo);
     for (todo in todos) {
       todo.editing = false;
     }
     update();
-  } 
+  }
+
+  public function remove(todo:Todo) {
+    todo.collection = null;
+    todos.remove(todo);
+    update();
+  }
 
   public function subscribe(action:()->Void) {
     actions.push(action);
@@ -103,7 +117,8 @@ class TodoItem extends Component {
   }
 
   function removeItem() {
-
+    todo.remove();
+    trace('removed');
   }
 
   override function render() return html('

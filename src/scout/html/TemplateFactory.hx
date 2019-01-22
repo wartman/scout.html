@@ -1,6 +1,6 @@
 package scout.html;
 
 interface TemplateFactory {
-  public final id:String = '';
-  public function get():Template;
+  public function getId():String;
+  public function getTemplate():Template;
 }
