@@ -79,6 +79,7 @@ class TemplateBuilder {
     var name = node.nodeName;
     var body:Array<Expr> = [];
     var attrs = [ for (n in node.attributes()) n ];
+    
     attrs.sort((a, b) -> {
       var aVal = node.get(a);
       var bVal = node.get(b);
@@ -99,10 +100,10 @@ class TemplateBuilder {
 
     for (attrName in attrs) {
       var attrValue:String = node.get(attrName);
-      if (attrName.startsWith('on:')) {
-        var event = attrName.substr(3);
+      if (attrName.startsWith('on')) {
+        var event = attrName.substr(2).toLowerCase();
         if (!placeholderRe.match(attrValue)) {
-          Context.error('Only functions are allowed for `on:$event` attributes', Context.currentPos());
+          Context.error('Only functions are allowed for `$attrName` attributes', Context.currentPos());
         }
         body.push(macro {
           var __ev = new scout.html.part.EventPart(
@@ -111,8 +112,8 @@ class TemplateBuilder {
           );
           __parts.push(__ev);
         });
-      } else if (attrName.startsWith('is:')) {
-        var name = attrName.substr(3);
+      } else if (attrName.startsWith('is')) {
+        var name = attrName.substr(2).toLowerCase();
         if (!placeholderRe.match(attrValue)) {
           body.push(macro {
             var __truthy:Bool = !!$v{attrValue};
@@ -132,7 +133,7 @@ class TemplateBuilder {
       } else if (attrName.startsWith('.')) {
         var name = attrName.substr(1);
         if (!placeholderRe.match(attrValue)) {
-          body.push(macro __e.setProperty($v{name}, $v{attrValue}));
+          body.push(macro Reflect.setProperty(__e, $v{name}, $v{attrValue}));
         } else {
           var attrStrings = placeholderReSplitter.split(attrValue);
           body.push(macro {

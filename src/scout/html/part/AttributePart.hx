@@ -1,6 +1,7 @@
 package scout.html.part;
 
 import scout.html.Part;
+import scout.html.Directive;
 
 class AttributePart implements Part {
 
@@ -9,7 +10,9 @@ class AttributePart implements Part {
   public function set_value(value:Dynamic) {
     if (value != null && value != this.value) {
       this.value = value;
-      committer.dirty = true;
+      if (!Std.is(this.value, Directive)) {
+        committer.dirty = true;
+      }
     }
     return value;
   }
@@ -20,6 +23,12 @@ class AttributePart implements Part {
   }
 
   public function commit() {
+    while (Std.is(value, Directive)) {
+      var directive:Directive = value;
+      value = null;
+      directive.handle(this);
+    }
+
     committer.commit();
   }
 

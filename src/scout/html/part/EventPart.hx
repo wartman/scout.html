@@ -3,7 +3,7 @@ package scout.html.part;
 import js.html.Element;
 import js.html.Event;
 import scout.html.Part;
-import scout.html.ElementRef;
+import scout.html.Directive;
 
 class EventPart implements Part {
 
@@ -19,13 +19,19 @@ class EventPart implements Part {
   }
   public function get_value() return currentValue;
 
-  public function new(element:ElementRef, event:String) {
+  public function new(element:Element, event:String) {
     this.element = element;
     this.event = event;
     boundEvent = e -> handleEvent(e);
   }
 
   public function commit() {
+    while (Std.is(pendingValue, Directive)) {
+      var directive:Directive = pendingValue;
+      pendingValue = null;
+      directive.handle(this);
+    }
+    
     if (pendingValue == null) return;
     // // todo: like this
     // const newListener = this._pendingValue;

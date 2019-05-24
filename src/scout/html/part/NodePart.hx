@@ -3,6 +3,7 @@ package scout.html.part;
 import js.html.Node;
 import js.Browser;
 import scout.html.Part;
+import scout.html.Directive;
 import scout.html.Template;
 import scout.html.TemplateResult;
 import scout.html.Dom.*;
@@ -50,13 +51,21 @@ class NodePart implements Part {
   }
 
   public function commit() {
+    while (Std.is(pendingValue, Directive)) {
+      var directive:Directive = pendingValue;
+      pendingValue = null;
+      directive.handle(this);
+    }
+    
     var value:Dynamic = pendingValue;
     switch (Type.getClass(value)) {
       case TemplateResult: commitTemplateResult(value);
       case Node: commitNode(value);
       // ???? how get iterable
       case Array: commitIterable(value);
-      default: if (value != currentValue) commitText(value);
+      default: 
+        if (value == null) return;
+        if (value != currentValue) commitText(value);
     }
   }
 
