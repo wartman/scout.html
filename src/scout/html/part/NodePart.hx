@@ -100,7 +100,7 @@ class NodePart implements Part {
 
   function commitTemplateResult(value:TemplateResult) {
     var factory = value.factory;
-    switch (Std.instance(currentValue, Template)) {
+    switch (Std.downcast(currentValue, Template)) {
       case instance if (instance != null && instance.id == factory.id):
         currentValue.update(value.values);
       default:

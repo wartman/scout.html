@@ -46,6 +46,22 @@ class Component implements Directive {
 
 }
 
+class Button extends Component {
+
+  var ev:(e:js.html.Event)->Void;
+  var label:String;
+
+  public function new(options:{ ev:(e:js.html.Event)->Void, label:String }) {
+    ev = options.ev;
+    label = options.label;
+  }
+
+  override function render():TemplateResult {
+    return html('<button onclick="${ev}">${label}</button>');
+  }
+
+}
+
 class Header extends Component {
 
   var title:String;
@@ -64,7 +80,7 @@ class Header extends Component {
   override function render():TemplateResult {
     return html('
       <p>${title}</p>
-      <button onClick="${changeTitle}">Change!</button>
+      ${ new Button({ ev: changeTitle, label: 'Change!' }) }
     ');
   }
 
