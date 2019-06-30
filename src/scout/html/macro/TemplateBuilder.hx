@@ -44,7 +44,12 @@ class TemplateBuilder {
   }
 
   static function getId() {
-    return id += 1;
+    function rand(from:Int, to:Int):Int {
+      return from + Math.floor((to - from) * Math.random());
+    }
+
+    var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return [ for (i in 0...20) chars.charAt(rand(0, chars.length - 1)) ].join('');
   }
 
   static function secondPass(str:String, values:Array<Expr>) {
@@ -56,6 +61,7 @@ class TemplateBuilder {
       default:
     }
     var name = 'TemplateFactory_' + getId();
+    
     Context.defineModule('scout.html.${name}', [ macro class $name implements scout.html.TemplateFactory {
 
       public final id:String = $v{name};
@@ -72,6 +78,7 @@ class TemplateBuilder {
       }
 
     } ]);
+
     return macro new scout.html.TemplateResult(new scout.html.$name(), [ $a{values} ]);
   }
 
