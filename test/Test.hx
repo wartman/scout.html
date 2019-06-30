@@ -2,7 +2,7 @@ import js.Browser;
 import js.html.Event;
 import scout.html.Directive;
 import scout.html.Part;
-import scout.html.Api.html;
+import scout.html.Template.html;
 import scout.html.TemplateResult;
 
 using scout.html.Renderer;

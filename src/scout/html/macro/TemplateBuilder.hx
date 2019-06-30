@@ -73,7 +73,7 @@ class TemplateBuilder {
         var __parts:Array<Null<scout.html.Part>> = [];
         var __e = js.Browser.document.createDocumentFragment();
         $b{exprs};
-        var __t = new scout.html.Template(id, cast __e, __parts);
+        var __t = new scout.html.TemplateInstance(id, cast __e, __parts);
         return __t;
       }
 

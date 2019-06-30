@@ -1,31 +1,15 @@
 package scout.html;
 
-import js.html.Element;
-
 class Template {
-
-  public final id:String;
-  public final parts:Array<Null<Part>>;  
-  public final el:Element;
-
-  public function new(
-    id:String,
-    el:Element,
-    parts:Array<Null<Part>>
-  ) {
-    this.id = id;
-    this.el = el;
-    this.parts = parts;
+  
+  public macro static function html(e:haxe.macro.Expr.ExprOf<String>) {
+    return scout.html.macro.TemplateBuilder.parse(e);
   }
 
-  public function update(values:Array<Dynamic>) {
-    for (i in 0...parts.length) {
-      if (i > values.length) break;
-      parts[i].value = values[i];
+  #if !macro
+    public static function render(result, container) {
+      return Renderer.render(result, container);
     }
-    for (part in parts) {
-      part.commit();
-    }
-  }
+  #end
 
 }

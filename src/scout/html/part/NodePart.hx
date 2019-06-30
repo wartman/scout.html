@@ -4,7 +4,7 @@ import js.html.Node;
 import js.Browser;
 import scout.html.Part;
 import scout.html.Directive;
-import scout.html.Template;
+import scout.html.TemplateInstance;
 import scout.html.TemplateResult;
 import scout.html.Dom.*;
 
@@ -100,7 +100,7 @@ class NodePart implements Part {
 
   function commitTemplateResult(value:TemplateResult) {
     var factory = value.factory;
-    switch (Std.downcast(currentValue, Template)) {
+    switch (Std.downcast(currentValue, TemplateInstance)) {
       case instance if (instance != null && instance.id == factory.id):
         currentValue.update(value.values);
       default:
