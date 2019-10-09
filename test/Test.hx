@@ -11,11 +11,12 @@ class Test {
 
   public static function main() {
     var foo = (thing:String, ev:(e:Event)->Void) -> html('
-      ${new Header('Test')}
+      ${new Header('foo')}
+      <Header>foo</Header>
+      <button onClick={ev}>Change</button>
       <div class="test">
-        <p>${thing}</p>
+        <p>Foo {thing}</p>
       </div>
-      <button onClick="${ev}">Change</button>
     ');
     Renderer.render(foo('Test', e -> {
       Renderer.render(foo('Ok!', e -> trace('ok!')), Browser.document.getElementById('root'));
@@ -57,7 +58,7 @@ class Button extends Component {
   }
 
   override function render():TemplateResult {
-    return html('<button onclick="${ev}">${label}</button>');
+    return html('<button onClick={ev}>{label}</button>');
   }
 
 }
@@ -79,8 +80,10 @@ class Header extends Component {
 
   override function render():TemplateResult {
     return html('
-      <p>${title}</p>
-      ${ new Button({ ev: changeTitle, label: 'Change!' }) }
+      <header>
+        <p>${title}</p>
+        ${ new Button({ ev: changeTitle, label: 'Change!' }) }
+      </header>
     ');
   }
 
