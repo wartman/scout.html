@@ -25,6 +25,17 @@ class Test {
 
 }
 
+abstract Button(TemplateResult) to TemplateResult {
+  
+  public function new(props:{
+    ev:(e:js.html.Event)->Void,
+    label:String
+  }) {
+    this = html('<button onClick={props.ev}>{props.label}</button>');
+  }
+
+}
+
 class Component implements Directive {
 
   var _part:Part;
@@ -43,22 +54,6 @@ class Component implements Directive {
   public function handle(part:Part) {
     _part = part;
     part.value = render();
-  }
-
-}
-
-class Button extends Component {
-
-  var ev:(e:js.html.Event)->Void;
-  var label:String;
-
-  public function new(options:{ ev:(e:js.html.Event)->Void, label:String }) {
-    ev = options.ev;
-    label = options.label;
-  }
-
-  override function render():TemplateResult {
-    return html('<button onClick={ev}>{label}</button>');
   }
 
 }

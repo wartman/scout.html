@@ -76,7 +76,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       whitespace();
 
       var didClose = false;
-      var checkClose = () -> didClose = match('</${name}');
+      var checkClose = () -> didClose = match('</${name}>');
 
       if (!checkClose()) while (!isAtEnd()) {
         whitespace();

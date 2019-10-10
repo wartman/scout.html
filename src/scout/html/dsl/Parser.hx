@@ -84,7 +84,7 @@ class Parser<T> {
   }
 
   function error(msg:String, min:Int, max:Int) {
-    throw new DslError('DSL Error: ' + msg, getPos(min, max));
+    throw new DslError(msg, getPos(min, max));
   }
 
   function getPos(min:Int, max:Int):{ min:Int, max:Int } {
