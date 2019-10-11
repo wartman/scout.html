@@ -57,7 +57,10 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     whitespace();
     while (!(peek() == '>' || peek() == '/') && !isAtEnd()) {
       var attrStart = position;
-      var key = ident();
+      whitespace();
+      var key:String = '';
+      if (match('.')) key = '.';
+      key += ident();
       whitespace();
       consume('=');
       whitespace();
@@ -180,7 +183,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
 
   function ident() {
     return [ 
-      while (isAlphaNumeric(peek()) && !isAtEnd()) advance() 
+      while ((isAlphaNumeric(peek()) || peek() == '-') && !isAtEnd()) advance() 
     ].join('');
   }
 

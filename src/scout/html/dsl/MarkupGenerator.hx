@@ -96,57 +96,33 @@ class MarkupGenerator {
           Context.error('Events can only recieve functions', pos);
         case Code(v):
           values.push(Context.parse(v, pos));
-          macro @:pos(pos) {
-            var __ev = new scout.html.part.EventPart(__e, $v{event});
-            __parts.push(__ev);
-          }
+          macro @:pos(pos) __parts.push(new scout.html.part.EventPart(__e, $v{event}));
       }
     } else if (attr.name.startsWith('is')) {
       var name = attr.name.substr(2).toLowerCase();
-      switch attr.value {
+      return switch attr.value {
         case Raw(v): 
           macro @:pos(pos) if (!!$v{v}) __e.setAttribute($v{name}, $v{name});
         case Code(v):
           values.push(Context.parse(v, pos));
-          macro @:pos(pos) {
-            var __b = new scout.html.part.BoolAttributePart(
-              __e,
-              $v{name},
-              [''] // todo
-            );
-            __parts.push(__b);
-          }
+          macro @:pos(pos) __parts.push(new scout.html.part.BoolAttributePart(__e, $v{name}));
       }
     } else if (attr.name.startsWith('.')) {
       var name = attr.name.substr(1);
-      switch attr.value {
+      return switch attr.value {
         case Raw(v):
-          macro @:pos(pos) Reflect.setProperty(__e, $v{v});
+          macro @:pos(pos) Reflect.setProperty(__e, $v{name}, $v{v});
         case Code(v):
           values.push(Context.parse(v, pos));
-          macro @:pos(pos) {
-            var __com = new scout.html.part.PropertyCommitter(
-              __e,
-              $v{name},
-              [] // todo -- likely we won't need this anymore
-            );
-            __parts = __parts.concat(cast __com.parts); 
-          }
+          macro @:pos(pos) __parts.push(new scout.html.part.PropertyPart(__e, $v{name}));
       }
     } else {
-      switch attr.value {
+      return switch attr.value {
         case Raw(v):
           macro @:pos(pos) __e.setAttribute($v{attr.name}, $v{v});
         case Code(v):
           values.push(Context.parse(v, pos));
-          macro @:pos(pos) {
-            var __com = new scout.html.part.AttributeCommitter(
-              __e,
-              $v{attr.name},
-              [] // todo -- likely we won't need this anymore
-            );
-            __parts = __parts.concat(cast __com.parts);
-          } 
+          macro @:pos(pos) __parts.push(new scout.html.part.AttributePart(__e, $v{attr.name}));
       }
     }
     return macro null;

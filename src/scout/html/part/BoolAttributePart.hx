@@ -8,7 +8,6 @@ class BoolAttributePart implements Part {
 
   final element:Element;
   final name:String;
-  final strings:Array<String>;
   var pendingValue:Dynamic;
   var currentValue:Dynamic;
   public var value(get, set):Dynamic;
@@ -18,10 +17,9 @@ class BoolAttributePart implements Part {
   }
   public function get_value() return currentValue;
 
-  public function new(element:Element, name:String, strings:Array<String>) {
+  public function new(element:Element, name:String) {
     this.element = element;
     this.name = name;
-    this.strings = strings;
   }
 
   public function commit() {
@@ -35,7 +33,7 @@ class BoolAttributePart implements Part {
     var value:Bool = !!pendingValue;
     if (currentValue != value) {
       if (value) {
-        element.setAttribute(name, '');
+        element.setAttribute(name, name);
       } else {
         element.removeAttribute(name);
       }

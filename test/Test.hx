@@ -12,7 +12,6 @@ class Test {
   public static function main() {
     var foo = (thing:String, ev:(e:Event)->Void) -> html('
       ${new Header('foo')}
-      <Header>foo</Header>
       <button onClick={ev}>Change</button>
       <div class="test">
         <p>Foo {thing}</p>
