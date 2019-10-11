@@ -8,6 +8,7 @@ import scout.html.dsl.MarkupParser;
 
 using StringTools;
 using haxe.macro.PositionTools;
+using haxe.macro.TypeTools;
 
 class MarkupGenerator {
   
@@ -73,6 +74,59 @@ class MarkupGenerator {
           $b{children};
           __e;
         });
+      case Component(name):
+        // note: this currently requires all components to be
+        //       in their own modules and imported.
+        var tp = { pack: [], name: name };
+        var type = try {
+          Context.getType(name);
+        } catch(e:String) {
+          Context.error(e + ' (note: the current implementaion does not allow for sub-types in the same module)', pos);
+        }
+
+        var fields = [ for (attr in node.attributes) 
+          {
+            field: attr.name,
+            expr: switch attr.value {
+              case Raw(v): macro @:pos(pos) $v{v};
+              case Code(v): Context.parse(v, pos);
+            }
+          }
+        ];
+        if (node.children.length > 0) {
+          fields.push({
+            field: 'children',
+            expr: new MarkupGenerator(node.children, makePos(node.pos)).generate()
+          });
+        }
+        var value:Expr = {
+          expr: EObjectDecl(fields),
+          pos: pos
+        };
+
+        if (Context.unify(type, Context.getType('scout.html.TemplateResult'))) {
+          values.push(macro new $tp($value));
+          return macro @:pos(pos) {
+            var __p = new scout.html.part.NodePart();
+            __parts.push(__p);
+            __p.appendInto(__e);
+            __e;
+          }
+        }
+
+        values.push(value);
+
+        if (!Context.unify(type, Context.getType('scout.html.Component'))) {
+          Context.error('Components must implement scout.html.Component', pos);
+        }
+
+        macro @:pos(pos) {
+          var __p = new scout.html.part.ComponentPart(new $tp());
+          __parts.push(__p);
+          __p.appendInto(__e);
+          __e;
+        }
+
       case CodeBlock(v):
         values.push(Context.parse(v, pos));
         macro @:pos(pos) {

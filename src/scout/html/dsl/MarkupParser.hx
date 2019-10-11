@@ -13,6 +13,7 @@ enum AttributeValue {
 
 enum MarkupKind {
   Node(name:String);
+  Component(name:String);
   Text(value:String);
   CodeBlock(v:String);
   None;
@@ -93,7 +94,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     }
 
     return {
-      kind: Node(name),
+      kind: isUcAlpha(name) ? Component(name) : Node(name),
       attributes: attrs,
       pos: getPos(start, position),
       children: children
