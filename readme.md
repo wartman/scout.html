@@ -42,7 +42,7 @@ Using a component (of either type) is simple -- the node name is just uppercase.
 
 import scout.html.*;
 
-class Example {
+class Example extends Component {
 
   @:attribute var title:String; 
 
