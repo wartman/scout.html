@@ -7,6 +7,7 @@ import scout.html.Template.html;
 class Header extends Component {
 
   @:attribute var title:String;
+  @:attribute var items:Array<String> = [];
   var i:Int = 0;
 
   public function changeTitle(e) {
@@ -16,21 +17,26 @@ class Header extends Component {
   override function render():TemplateResult {
     return html('
       <header>
-        <p>${title}</p>
-        <Button ev=${changeTitle}>Change!</Button>
-        <Button ev=${e -> {
+        <p>{title}</p>
+        <Button ev={changeTitle}>Change!</Button>
+        <component.Button ev={e -> {
           i = 0;
-          title = 'Reset';
-        }}>Reset</Button>
-        ${children}
+          title = "Reset";
+        }}>Reset</component.Button>
+        <for {item in items}>
+          <p>{item}</p>
+        </for>
+        <if {children != null}>
+          {children}
+        <else>
+          No children.
+        </if>
       </header>
     ');
   }
 
 }
 
-// Note how abstracts can also be used as stateless 
-// components!
 abstract Button(TemplateResult) to TemplateResult {
   
   public function new(props:{

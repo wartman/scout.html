@@ -11,7 +11,7 @@ class Test {
 
   public static function main() {
     var foo = (thing:String, ev:(e:Event)->Void) -> html('
-      <Header title="foo">
+      <Header title="foo" items=${['a', 'b', 'c']}>
         Bar
       </Header>
       <button onClick={ev}>Change</button>

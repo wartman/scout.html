@@ -8,7 +8,9 @@ using Reflect;
 @:autoBuild(scout.html.macro.ComponentBuilder.build())
 class Component {
 
-  final public function new() {}
+  final public function new() {
+    _scout_init();
+  }
 
   @:noCompletion var _scout_part:Part;
   @:noCompletion var _scout_properties:DynamicAccess<Dynamic> = {};
@@ -34,6 +36,10 @@ class Component {
 
   @:noCompletion function _scout_getProperty(key:String):Dynamic {
     return _scout_properties.get(key);
+  }
+
+  @:noCompletion function _scout_init() {
+    // noop;
   }
   
   public function render():TemplateResult {

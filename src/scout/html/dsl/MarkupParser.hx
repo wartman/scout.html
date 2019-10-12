@@ -1,30 +1,8 @@
 package scout.html.dsl;
 
+import scout.html.dsl.MarkupNode;
+
 using StringTools;
-
-typedef MarkupPos = { min:Int, max:Int };
-
-typedef Attribute = { name:String, value:AttributeValue, pos:MarkupPos };
-
-enum AttributeValue {
-  Raw(v:String);
-  Code(v:String);
-}
-
-enum MarkupKind {
-  Node(name:String);
-  Component(name:String);
-  Text(value:String);
-  CodeBlock(v:String);
-  None;
-}
-
-typedef MarkupNode = {
-  kind:MarkupKind,
-  pos:MarkupPos,
-  ?attributes:Array<Attribute>,
-  ?children:Array<MarkupNode>
-}
 
 class MarkupParser extends Parser<Array<MarkupNode>> {
 
@@ -33,7 +11,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     while (!isAtEnd()) out.push(parseRoot());
     if (out.length == 0) {
       out.push({
-        kind: None,
+        node: MNone,
         pos: getPos(position, position)
       });
     }
@@ -42,8 +20,12 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
 
   function parseRoot():MarkupNode {
     whitespace();
-    var start = position;
     return switch advance() {
+      case '<' if (match('for')): parseFor();
+      case '<' if (match('if')): parseIf();
+      case '<' if (match('/')): 
+        error('Unexpected close tag', position - 1, position + 1);
+        null;
       case '<': parseNode();
       case '$': parseCodeBlock(0);
       case '{': parseCodeBlock(1);
@@ -51,10 +33,97 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     }
   }
 
+  function parseFor():MarkupNode {
+    var start = position - 4;
+
+    whitespace();
+
+    var it = switch advance() {
+      case '{': parseCode(1);
+      case '$': parseCode(0);
+      default:
+        error('<for> requires an iterator', position - 1, position);
+        null;
+    }
+
+    whitespace();
+
+    if (match('/>')) {
+      error('<for> cannot be a void tag', start, position);
+    }
+
+    consume('>');
+    whitespace();
+    
+    var children = parseChildren('for');
+    
+    return {
+      node: MFor(it, children),
+      pos: getPos(start, position)
+    };
+  }
+
+  function parseIf():MarkupNode {
+    var start = position - 3;
+
+    whitespace();
+
+    var cond = switch advance() {
+      case '{': parseCode(1);
+      case '$': parseCode(0);
+      default:
+        error('<if> requires a condition', position - 1, position);
+        null;
+    }
+
+    whitespace();
+
+    if (match('/>')) {
+      error('<if> cannot be a void tag', start, position);
+    }
+    
+    consume('>');
+    whitespace();
+
+    var hasElseBranch:Bool = false;
+    var didClose:Bool = false;
+    var endThenBranch = () -> {
+      if (match('<else>')) {
+        hasElseBranch = true;
+        didClose = true;
+        return true;
+      }
+      return didClose = match('</if>');
+    };
+    var passing:Array<MarkupNode> = [];
+    var failed:Array<MarkupNode> = [];
+
+    if (!endThenBranch()) while (!isAtEnd()) {
+      whitespace();
+      if (endThenBranch()) break;
+      passing.push(parseRoot());
+    }
+
+    if (!didClose) {
+      error('Unclosed <if>', start, position);
+    }
+
+    if (hasElseBranch) {
+      failed = parseChildren('if');
+    } else {
+      failed = null;
+    }
+
+    return {
+      node: MIf(cond, passing, failed),
+      pos: getPos(start, position)
+    };
+  }
+
   function parseNode():MarkupNode {
-    var start = position;
-    var name = ident();
-    var attrs:Array<Attribute> = [];
+    var start = position - 1;
+    var name = path();
+    var attrs:Array<MarkupAttribute> = [];
     whitespace();
     while (!(peek() == '>' || peek() == '/') && !isAtEnd()) {
       var attrStart = position;
@@ -73,32 +142,42 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
         pos: getPos(attrStart, position)
       });
     }
-    var children:Array<MarkupNode> = [];
 
+    var children:Array<MarkupNode> = [];
     if (!match('/>')) {
       consume('>');
       whitespace();
-
-      var didClose = false;
-      var checkClose = () -> didClose = match('</${name}>');
-
-      if (!checkClose()) while (!isAtEnd()) {
-        whitespace();
-        if (checkClose()) break;
-        children.push(parseRoot());
-      }
-
-      if (!didClose) {
-        error('Unclosed tag: ${name}', start, position);
-      }
+      children = parseChildren(name);
     }
 
     return {
-      kind: isUcAlpha(name) ? Component(name) : Node(name),
-      attributes: attrs,
-      pos: getPos(start, position),
-      children: children
+      node: MNode(
+        name,
+        attrs,
+        children,
+        isUcAlpha(name.charAt(0)) || name.contains('.')
+      ),
+      pos: getPos(start, position)
     };
+  }
+
+  function parseChildren(closeTag:String):Array<MarkupNode> {
+    var start = position;
+    var children:Array<MarkupNode> = [];
+    var didClose = false;
+    var checkClose = () -> didClose = match('</${closeTag}>');
+
+    if (!checkClose()) while (!isAtEnd()) {
+      whitespace();
+      if (checkClose()) break;
+      children.push(parseRoot());
+    }
+
+    if (!didClose) {
+      error('Unclosed tag: ${closeTag}', start, position);
+    }
+
+    return children;
   }
 
   function parseText(init:String):MarkupNode {
@@ -115,12 +194,12 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     }
     if (out.trim().length == 0) {
       return {
-        kind: None,
+        node: MNone,
         pos: getPos(start, position)
       }
     }
     return {
-      kind: Text(out),
+      node: MText(out),
       pos: getPos(start, position)
     };
   }
@@ -129,12 +208,12 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     var start = position;
     var out:String = parseCode(braces);
     return {
-      kind: CodeBlock(out),
+      node: MCode(out),
       pos: getPos(start, position)
     };
   }
 
-  function parseValue():AttributeValue {
+  function parseValue():MarkupAttributeValue {
     return switch advance() {
       case '$': Code(parseCode(0));
       case '{': Code(parseCode(1));
@@ -185,6 +264,12 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
   function ident() {
     return [ 
       while ((isAlphaNumeric(peek()) || peek() == '-') && !isAtEnd()) advance() 
+    ].join('');
+  }
+
+  function path() {
+    return [ 
+      while ((isAlphaNumeric(peek()) || peek() == '.' || peek() == '-') && !isAtEnd()) advance() 
     ].join('');
   }
 

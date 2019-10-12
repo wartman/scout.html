@@ -4,11 +4,10 @@ package scout.html.dsl;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import scout.html.dsl.MarkupParser;
+import scout.html.dsl.MarkupNode;
 
 using StringTools;
 using haxe.macro.PositionTools;
-using haxe.macro.TypeTools;
 
 class DomGenerator {
   
@@ -55,17 +54,18 @@ class DomGenerator {
 
   function getId(pos:Position) {
     var cls = Context.getLocalClass().get();
-    return cls.pack.concat([ cls.name ]).join('_') + '_' + pos.getInfos().min;
+    return cls.pack.concat([ cls.name ]).join('_') + '_' + pos.getInfos().max;
   }
 
   function generateNode(node:MarkupNode, values:Array<Expr>):Expr {
     var pos = makePos(node.pos);
-    return switch node.kind {
-      case Node(name):
-        var attrs = [ for (attr in node.attributes) 
+    return switch node.node {
+
+      case MNode(name, attrs, children, false):
+        var attrs = [ for (attr in attrs) 
           generateAttr(attr, values) 
         ];
-        var children = [ for (c in node.children)
+        var children = [ for (c in children)
           generateNode(c, values)
         ].filter(e -> e != null);
         macro @:pos(pos) __e.appendChild({
@@ -74,17 +74,20 @@ class DomGenerator {
           $b{children};
           __e;
         });
-      case Component(name):
-        // note: this currently requires all components to be
-        //       in their own modules and imported.
-        var tp = { pack: [], name: name };
+        
+      case MNode(name, attrs, children, true):
+        var tp = if (name.contains('.')) {
+          var pack = name.split('.');
+          var clsName = pack.pop();
+          { pack: pack, name: clsName };
+        } else { pack: [], name: name };
         var type = try {
           Context.getType(name);
         } catch(e:String) {
-          Context.error(e + ' (note: the current implementaion does not allow for sub-types in the same module)', pos);
+          Context.error(e, pos);
         }
 
-        var fields = [ for (attr in node.attributes) 
+        var fields = [ for (attr in attrs) 
           {
             field: attr.name,
             expr: switch attr.value {
@@ -93,10 +96,10 @@ class DomGenerator {
             }
           }
         ];
-        if (node.children.length > 0) {
+        if (children.length > 0) {
           fields.push({
             field: 'children',
-            expr: new DomGenerator(node.children, makePos(node.pos)).generate()
+            expr: new DomGenerator(children, makePos(node.pos)).generate()
           });
         }
         var value:Expr = {
@@ -125,7 +128,7 @@ class DomGenerator {
           }
         }
 
-      case CodeBlock(v):
+      case MCode(v):
         values.push(Context.parse(v, pos));
         macro @:pos(pos) {
           var __p = new scout.html.part.NodePart();
@@ -133,13 +136,41 @@ class DomGenerator {
           __p.appendInto(__e);
           __e;
         }
-      case Text(value):
+
+      case MText(value):
         macro @:pos(pos) __e.appendChild(scout.html.Dom.createTextNode($v{value}));
-      case None: null;
+      
+      case MFor(it, children):
+        var expr = Context.parse(it, pos);
+        var children = new DomGenerator(children, pos).generate();
+        values.push(macro @:pos(pos) [ for (${expr}) ${children} ]);
+        macro @:pos(pos) {
+          var __p = new scout.html.part.NodePart();
+          __parts.push(__p);
+          __p.appendInto(__e);
+          __e;
+        }
+
+      case MIf(cond, passing, failed):
+        var expr = Context.parse(cond, pos);
+        var ifBranch = new DomGenerator(passing, pos).generate();
+        var elseBranch = failed != null 
+          ? new DomGenerator(failed, makePos(failed[0].pos)).generate()
+          : macro null;
+        values.push(macro @:pos(pos) if (${expr}) ${ifBranch} else ${elseBranch});
+        macro @:pos(pos) {
+          var __p = new scout.html.part.NodePart();
+          __parts.push(__p);
+          __p.appendInto(__e);
+          __e;
+        }
+
+      case MNone: null;
+
     }
   }
 
-  function generateAttr(attr:Attribute, values:Array<Expr>):Expr {
+  function generateAttr(attr:MarkupAttribute, values:Array<Expr>):Expr {
     var pos = makePos(attr.pos);
     if (attr.name.startsWith('on')) {
       var event = attr.name.substr(2).toLowerCase();
@@ -180,7 +211,7 @@ class DomGenerator {
     return macro null;
   }
 
-  function makePos(pos:MarkupPos):Position {
+  function makePos(pos:MarkupPosition):Position {
     return Context.makePosition({
       min: pos.min,
       max: pos.max,

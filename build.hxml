@@ -1,5 +1,6 @@
 -cp src
 -cp test
+-cp example
 -main Test
 -dce full
 -D js-es=6
