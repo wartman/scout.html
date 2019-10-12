@@ -47,7 +47,7 @@ class Example extends Component {
   @:attribute var title:String; 
 
   function setTitle(e) {
-    title = foo; // will automatically re-render the component
+    title = 'foo'; // will automatically re-render the component
   }
 
   override function render():TemplateResult {

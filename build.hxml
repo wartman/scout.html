@@ -1,4 +1,7 @@
 -cp src
 -cp test
 -main Test
+-dce full
+-D js-es=6
+-D analyzer-optimize
 -js dist/test.js

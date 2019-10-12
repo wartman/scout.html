@@ -15,7 +15,7 @@ class TemplateBuilder {
         var info = tpl.pos.getInfos();
         try {
           var ast = new MarkupParser(s, info.file, info.min).parse();
-          new MarkupGenerator(ast, tpl.pos).generate();
+          new DomGenerator(ast, tpl.pos).generate();
         } catch (e:DslError) {
           Context.error(e.message, Context.makePosition({
             min: e.pos.min,

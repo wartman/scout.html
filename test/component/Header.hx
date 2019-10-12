@@ -18,6 +18,10 @@ class Header extends Component {
       <header>
         <p>${title}</p>
         <Button ev=${changeTitle}>Change!</Button>
+        <Button ev=${e -> {
+          i = 0;
+          title = 'Reset';
+        }}>Reset</Button>
         ${children}
       </header>
     ');
@@ -33,7 +37,11 @@ abstract Button(TemplateResult) to TemplateResult {
     ev:(e:js.html.Event)->Void,
     children:TemplateResult
   }) {
-    this = html('<button onClick={props.ev}>{props.children}</button>');
+    this = html('
+      <button onClick={props.ev}>
+        {props.children}
+      </button>
+    ');
   }
 
 }

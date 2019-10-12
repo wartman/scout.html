@@ -10,7 +10,7 @@ using StringTools;
 using haxe.macro.PositionTools;
 using haxe.macro.TypeTools;
 
-class MarkupGenerator {
+class DomGenerator {
   
   final nodes:Array<MarkupNode>;
   final pos:Position;
@@ -96,7 +96,7 @@ class MarkupGenerator {
         if (node.children.length > 0) {
           fields.push({
             field: 'children',
-            expr: new MarkupGenerator(node.children, makePos(node.pos)).generate()
+            expr: new DomGenerator(node.children, makePos(node.pos)).generate()
           });
         }
         var value:Expr = {
@@ -106,25 +106,23 @@ class MarkupGenerator {
 
         if (Context.unify(type, Context.getType('scout.html.TemplateResult'))) {
           values.push(macro new $tp($value));
-          return macro @:pos(pos) {
+          macro @:pos(pos) {
             var __p = new scout.html.part.NodePart();
             __parts.push(__p);
             __p.appendInto(__e);
             __e;
           }
-        }
-
-        values.push(value);
-
-        if (!Context.unify(type, Context.getType('scout.html.Component'))) {
-          Context.error('Components must implement scout.html.Component', pos);
-        }
-
-        macro @:pos(pos) {
-          var __p = new scout.html.part.ComponentPart(new $tp());
-          __parts.push(__p);
-          __p.appendInto(__e);
-          __e;
+        } else {
+          if (!Context.unify(type, Context.getType('scout.html.Component'))) {
+            Context.error('Components must implement scout.html.Component', pos);
+          }
+          values.push(value);
+          macro @:pos(pos) {
+            var __p = new scout.html.part.ComponentPart(new $tp());
+            __parts.push(__p);
+            __p.appendInto(__e);
+            __e;
+          }
         }
 
       case CodeBlock(v):
