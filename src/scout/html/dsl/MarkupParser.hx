@@ -65,10 +65,23 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
 
   function parseIf():MarkupNode {
     var start = position - 3;
+    var hasElseBranch:Bool = false;
+    var didClose:Bool = false;
+    var endThenBranch = () -> {
+      if (match('<else>')) {
+        hasElseBranch = true;
+        didClose = true;
+        return true;
+      }
+      return didClose = match('</if>');
+    };
+    var passing:Array<MarkupNode> = [];
+    var failed:Array<MarkupNode> = [];
+    var cond:String = '';
 
     whitespace();
 
-    var cond = switch advance() {
+    cond = switch advance() {
       case '{': parseCode(1);
       case '$': parseCode(0);
       default:
@@ -85,23 +98,9 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     consume('>');
     whitespace();
 
-    var hasElseBranch:Bool = false;
-    var didClose:Bool = false;
-    var endThenBranch = () -> {
-      if (match('<else>')) {
-        hasElseBranch = true;
-        didClose = true;
-        return true;
-      }
-      return didClose = match('</if>');
-    };
-    var passing:Array<MarkupNode> = [];
-    var failed:Array<MarkupNode> = [];
-
-    if (!endThenBranch()) while (!isAtEnd()) {
-      whitespace();
-      if (endThenBranch()) break;
+    while (!isAtEnd() && !endThenBranch()) {
       passing.push(parseRoot());
+      whitespace();
     }
 
     if (!didClose) {
@@ -124,12 +123,15 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     var start = position - 1;
     var name = path();
     var attrs:Array<MarkupAttribute> = [];
+    var children:Array<MarkupNode> = [];
+
     whitespace();
 
     while (!(peek() == '>' || peek() == '/') && !isAtEnd()) {
       var attrStart = position;
-      whitespace();
       var key:String = '';
+
+      whitespace();
       if (match('.')) key = '.';
       key += ident();
       whitespace();
@@ -137,6 +139,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       whitespace();
       var value = parseValue();
       whitespace();
+
       attrs.push({
         name: key,
         value: value,
@@ -144,7 +147,6 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       });
     }
 
-    var children:Array<MarkupNode> = [];
     if (!match('/>')) {
       consume('>');
       whitespace();
@@ -185,6 +187,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
   function parseText(init:String):MarkupNode {
     var start = position;
     var out = init;
+
     while (
       !isAtEnd() 
       // todo: allow escapes
@@ -194,12 +197,14 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     ) {
       out += advance();
     }
+
     if (out.trim().length == 0) {
       return {
         node: MNone,
         pos: getPos(start, position)
       }
     }
+
     return {
       node: MText(out),
       pos: getPos(start, position)
@@ -209,6 +214,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
   function parseCodeBlock(braces:Int):MarkupNode {
     var start = position;
     var out:String = parseCode(braces);
+
     return {
       node: MCode(out),
       pos: getPos(start, position)
@@ -234,13 +240,16 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
   function string(delimiter:String) {
     var out = '';
     var start = position;
+
     while (!isAtEnd() && !match(delimiter)) {
       out += advance();
       if (previous() == '\\' && !isAtEnd()) {
         out += '\\${advance()}';
       }
     }
+
     if (isAtEnd()) error('Unterminated string', start, position);
+    
     return out;
   }
 
