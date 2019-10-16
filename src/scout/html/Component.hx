@@ -2,36 +2,24 @@ package scout.html;
 
 import haxe.DynamicAccess;
 
-using Reflect;
-
-@:allow(scout.html.Part)
 @:autoBuild(scout.html.macro.ComponentBuilder.build())
-class Component {
+class Component implements Part {
+  
+  @:noCompletion public final _scout_target:Target = new Target();
+  @:noCompletion var _scout_properties:DynamicAccess<Dynamic> = {};
+  @:noCompletion var _scout_instance:TemplateInstance;
 
   final public function new() {
     _scout_init();
   }
-
-  @:noCompletion var _scout_part:Part;
-  @:noCompletion var _scout_properties:DynamicAccess<Dynamic> = {};
-
-  @:noCompletion function _scout_setPart(part:Part):Void {
-    _scout_part = part;
-  }
   
-  @:noCompletion function _scout_setProperties(props:Dynamic):Void {
+  public function setValue(props:Dynamic) {
     _scout_properties = props;
   }
 
   @:noCompletion function _scout_setProperty(key:String, value:Dynamic) {
-    if (_scout_part != null) {
-      var props = _scout_properties.copy();
-      props.set(key, value);
-      _scout_part.value = props;
-      _scout_part.commit();
-    } else {
-      _scout_properties.set(key, value);
-    }
+    _scout_properties.set(key, value);
+    commit();
   }
 
   @:noCompletion function _scout_getProperty(key:String):Dynamic {
@@ -41,13 +29,27 @@ class Component {
   @:noCompletion function _scout_init() {
     // noop;
   }
+
+  public function commit() {
+    if (_scout_properties == null) {
+      dispose();
+    } else if (_scout_instance != null) {
+      _scout_instance.update(render().values);
+    } else {
+      var result = render();
+      _scout_instance = result.factory.get();
+      _scout_instance.update(result.values);
+      _scout_target.insert(_scout_instance.el);
+    }
+  }
   
   public function render():TemplateResult {
     return null;
   }
 
   public function dispose():Void {
-    // noop
+    _scout_instance = null;
+    _scout_properties = null;
   }
 
 }

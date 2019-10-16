@@ -125,6 +125,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     var name = path();
     var attrs:Array<MarkupAttribute> = [];
     whitespace();
+
     while (!(peek() == '>' || peek() == '/') && !isAtEnd()) {
       var attrStart = position;
       whitespace();
@@ -165,12 +166,13 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     var start = position;
     var children:Array<MarkupNode> = [];
     var didClose = false;
-    var checkClose = () -> didClose = match('</${closeTag}>');
+    var isClosed = () -> didClose = match('</${closeTag}>');
 
-    if (!checkClose()) while (!isAtEnd()) {
-      whitespace();
-      if (checkClose()) break;
+    whitespace();
+
+    while (!isAtEnd() && !isClosed()) {
       children.push(parseRoot());
+      whitespace();
     }
 
     if (!didClose) {

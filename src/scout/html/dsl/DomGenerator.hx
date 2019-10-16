@@ -112,7 +112,7 @@ class DomGenerator {
           macro @:pos(pos) {
             var __p = new scout.html.part.NodePart();
             __parts.push(__p);
-            __p.appendInto(__e);
+            __p._scout_target.appendInto(__e);
             __e;
           }
         } else {
@@ -121,9 +121,9 @@ class DomGenerator {
           }
           values.push(value);
           macro @:pos(pos) {
-            var __p = new scout.html.part.ComponentPart(new $tp());
+            var __p = new $tp();
             __parts.push(__p);
-            __p.appendInto(__e);
+            __p._scout_target.appendInto(__e);
             __e;
           }
         }
@@ -133,7 +133,7 @@ class DomGenerator {
         macro @:pos(pos) {
           var __p = new scout.html.part.NodePart();
           __parts.push(__p);
-          __p.appendInto(__e);
+          __p._scout_target.appendInto(__e);
           __e;
         }
 
@@ -147,7 +147,7 @@ class DomGenerator {
         macro @:pos(pos) {
           var __p = new scout.html.part.NodePart();
           __parts.push(__p);
-          __p.appendInto(__e);
+          __p._scout_target.appendInto(__e);
           __e;
         }
 
@@ -161,7 +161,7 @@ class DomGenerator {
         macro @:pos(pos) {
           var __p = new scout.html.part.NodePart();
           __parts.push(__p);
-          __p.appendInto(__e);
+          __p._scout_target.appendInto(__e);
           __e;
         }
 

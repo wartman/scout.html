@@ -21,7 +21,7 @@ class TemplateInstance {
   public function update(values:Array<Dynamic>) {
     for (i in 0...parts.length) {
       if (i > values.length) break;
-      parts[i].value = values[i];
+      parts[i].setValue(values[i]);
     }
     for (part in parts) {
       part.commit();

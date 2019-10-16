@@ -4,10 +4,10 @@ class PropertyPart extends AttributePart {
 
   override function commit() {
     handleDirective();
-    if (dirty) {
-      dirty = false;
-      Reflect.setProperty(element, name, value);
+    if (pendingValue != currentValue) {
+      Reflect.setProperty(element, name, pendingValue);
     }
+    currentValue = pendingValue;
   }
 
 }

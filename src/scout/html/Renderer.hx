@@ -18,9 +18,9 @@ class Renderer {
       Dom.removeNodes(container, container.firstChild);
       part = new NodePart();
       parts.set(container, part);
-      part.appendInto(container);
+      part._scout_target.appendInto(container);
     }
-    part.value = result;
+    part.setValue(result);
     part.commit();
   }
 

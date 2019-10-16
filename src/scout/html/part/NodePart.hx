@@ -2,52 +2,19 @@ package scout.html.part;
 
 import js.html.Node;
 import js.Browser;
-import scout.html.Part;
-import scout.html.Directive;
-import scout.html.TemplateInstance;
-import scout.html.TemplateResult;
+import scout.html.*;
 import scout.html.Dom.*;
 
 class NodePart implements Part {
 
-  public var startNode:Node;
-  public var endNode:Node;
+  public final _scout_target:Target = new Target();
   var pendingValue:Dynamic;
   var currentValue:Dynamic;
-  public var value(get, set):Dynamic;
-  public function set_value(v:Dynamic) {
-    pendingValue = v;
-    return v;
-  }
-  public function get_value() return currentValue;
 
   public function new() {}
   
-  public function insertAfterNode(ref:Node) {
-    startNode = ref;
-    endNode = ref.nextSibling;
-  }
-
-  public function appendInto(container:Node) {
-    startNode = container.appendChild(createMarker());
-    endNode = container.appendChild(createMarker());
-  }
-
-  public function appendIntoPart(part:NodePart) {
-    part.insert(startNode = createMarker());
-    part.insert(endNode = createMarker());
-  }
-
-  public function insertAfterPart(ref:NodePart) {
-    ref.insert(startNode = createMarker());
-    endNode = ref.endNode;
-    ref.endNode = startNode;
-  }
-
-  public function insert(node:Node) {
-    if (endNode.parentNode != null) {
-      endNode.parentNode.insertBefore(node, endNode);
-    }
+  public function setValue(v:Dynamic) {
+    pendingValue = v;
   }
 
   public function commit() {
@@ -83,18 +50,18 @@ class NodePart implements Part {
         itemPart = new NodePart();
         itemParts.push(itemPart);
         if (partIndex == 0) {
-          itemPart.appendIntoPart(this);
+          itemPart._scout_target.appendIntoTarget(_scout_target);
         } else {
-          itemPart.insertAfterPart(itemParts[partIndex - 1]);
+          itemPart._scout_target.insertAfterTarget(itemParts[partIndex - 1]._scout_target);
         }
       }
-      itemPart.value = item;
+      itemPart.setValue(item);
       itemPart.commit();
       partIndex++;
     }
     if (partIndex < itemParts.length) {
       itemParts = itemParts.splice(0, partIndex);
-      clear(itemPart != null ? itemPart.endNode : null);
+      clear(itemPart != null ? itemPart._scout_target.endNode : null);
     }
   }
 
@@ -113,17 +80,17 @@ class NodePart implements Part {
   }
 
   function commitNode(value:Node):Void {
-    if (this.value == value) return;
+    if (currentValue == value) return;
     clear();
-    insert(value);
+    _scout_target.insert(value);
     currentValue = value;
   }
 
   function commitText(value:String) {
-    var node = startNode.nextSibling;
+    var node = _scout_target.startNode.nextSibling;
     value = value == null ? '' : value;
     if (
-      node == endNode.previousSibling
+      node == _scout_target.endNode.previousSibling
       && node.nodeType == Node.TEXT_NODE
     ) {
       node.textContent = value;
@@ -134,11 +101,11 @@ class NodePart implements Part {
   }
 
   public function clear(?startNode:Node) {
-    if (startNode == null) startNode = this.startNode;
+    if (startNode == null) startNode = _scout_target.startNode;
     removeNodes(
       startNode.parentNode, 
       startNode.nextSibling,
-      endNode
+      _scout_target.endNode
     );
   }
 

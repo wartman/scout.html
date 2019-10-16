@@ -8,41 +8,37 @@ class AttributePart implements Part {
   
   final name:String;
   final element:Element;
-  public var dirty:Bool = true;
-  @:isVar public var value(get, set):Dynamic;
-  public function set_value(value:Dynamic) {
-    if (value != this.value) {
-      this.value = value;
-      if (!Std.is(this.value, Directive)) {
-        dirty = true;
-      }
-    }
-    return value;
-  }
-  public function get_value() return this.value;
+  var pendingValue:Dynamic;
+  var currentValue:Dynamic;
 
   public function new(element:Element, name:String) {
     this.element = element;
     this.name = name;
   }
 
-  public function commit() {
-    handleDirective();
-    if (dirty) {
-      dirty = false;
-      if (value == null) {
-        element.removeAttribute(name);
-      } else {
-        var out = Std.is(value, Array) ? value.join('') : value;
-        element.setAttribute(name, out);
-      }
+  public function setValue(value:Dynamic) {
+    if (value != currentValue) {
+      pendingValue = value;
     }
   }
 
+  public function commit() {
+    handleDirective();
+    if (pendingValue != currentValue) {
+      if (pendingValue == null) {
+        element.removeAttribute(name);
+      } else {
+        var out = Std.is(pendingValue, Array) ? pendingValue.join('') : pendingValue;
+        element.setAttribute(name, out);
+      }
+    }
+    currentValue = pendingValue;
+  }
+
   function handleDirective() {
-    while (Std.is(value, Directive)) {
-      var directive:Directive = value;
-      value = null;
+    while (Std.is(pendingValue, Directive)) {
+      var directive:Directive = pendingValue;
+      pendingValue = null;
       directive.handle(this);
     }
   }

@@ -12,17 +12,16 @@ class EventPart implements Part {
   var boundEvent:(event:Event)->Void;
   var pendingValue:Dynamic;
   var currentValue:Dynamic;
-  public var value(get, set):Dynamic;
-  public function set_value(value:Dynamic) {
-    pendingValue = value;
-    return value;
-  }
-  public function get_value() return currentValue;
 
   public function new(element:Element, event:String) {
     this.element = element;
     this.event = event;
     boundEvent = e -> handleEvent(e);
+  }
+
+  
+  public function setValue(value:Dynamic) {
+    pendingValue = value;
   }
 
   public function commit() {
@@ -62,8 +61,8 @@ class EventPart implements Part {
   }
 
   function handleEvent(e:Event) {
-    if (value == null) return;
-    var ev:(e:Event)->Void = cast value;
+    if (currentValue == null) return;
+    var ev:(e:Event)->Void = cast currentValue;
     ev(e);
   }
 
