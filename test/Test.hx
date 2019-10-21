@@ -10,7 +10,7 @@ using scout.html.Renderer;
 class Test {
 
   public static function main() {
-    var foo = (thing:String, ev:(e:Event)->Void) -> html('
+    var foo = (thing:String, ev:(e:Event)->Void) -> html(<>
       <Header title="foo" items=${['a', 'b', 'c']}>
         Bar
       </Header>
@@ -18,7 +18,7 @@ class Test {
       <div class="test">
         <p>Foo {thing}</p>
       </div>
-    ');
+    </>);
     Renderer.render(foo('Test', e -> {
       Renderer.render(foo('Ok!', e -> trace('ok!')), Browser.document.getElementById('root'));
     }), Browser.document.getElementById('root'));

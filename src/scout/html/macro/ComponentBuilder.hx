@@ -1,4 +1,5 @@
 #if macro
+
 package scout.html.macro;
 
 import haxe.macro.Expr;
@@ -66,4 +67,5 @@ class ComponentBuilder {
   }
 
 }
+
 #end

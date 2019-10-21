@@ -1,4 +1,5 @@
 #if macro
+
 package scout.html.macro;
 
 import haxe.macro.Expr;
@@ -9,9 +10,9 @@ using haxe.macro.PositionTools;
 
 class TemplateBuilder {
 
-  public static function parse(tpl:ExprOf<String>) {
+  public static function parse(tpl:Expr) {
     return switch (tpl.expr) {
-      case EConst(CString(s)):
+      case EConst(CString(s)) | EMeta({ name: ':markup' }, { expr: EConst(CString(s)) }):
         var info = tpl.pos.getInfos();
         try {
           var ast = new MarkupParser(s, info.file, info.min).parse();
@@ -29,4 +30,5 @@ class TemplateBuilder {
   }
 
 }
+
 #end

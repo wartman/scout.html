@@ -15,7 +15,7 @@ class Header extends Component {
   }
 
   override function render():TemplateResult {
-    return html('
+    return html(
       <header>
         <p>{title}</p>
         <Button ev={changeTitle}>Change!</Button>
@@ -32,7 +32,7 @@ class Header extends Component {
           No children.
         </if>
       </header>
-    ');
+    );
   }
 
 }

@@ -4,6 +4,8 @@ import scout.html.dsl.MarkupNode;
 
 using StringTools;
 
+using StringTools;
+
 class MarkupParser extends Parser<Array<MarkupNode>> {
 
   override function parse():Array<MarkupNode> {
@@ -21,11 +23,13 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
   function parseRoot():MarkupNode {
     whitespace();
     return switch advance() {
+      case '/' if (match('/')):
+        ignoreLine();
+        null;
       case '<' if (match('for')): parseFor();
       case '<' if (match('if')): parseIf();
       case '<' if (match('/')): 
-        error('Unexpected close tag', position - 1, position + 1);
-        null;
+        throw error('Unexpected close tag', position - 1, position + 1);
       case '<': parseNode();
       case '$': parseCodeBlock(0);
       case '{': parseCodeBlock(1);
@@ -42,14 +46,13 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       case '{': parseCode(1);
       case '$': parseCode(0);
       default:
-        error('<for> requires an iterator', position - 1, position);
-        null;
+        throw error('<for> requires an iterator', position - 1, position);
     }
 
     whitespace();
 
     if (match('/>')) {
-      error('<for> cannot be a void tag', start, position);
+      throw error('<for> cannot be a void tag', start, position);
     }
 
     consume('>');
@@ -85,14 +88,13 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       case '{': parseCode(1);
       case '$': parseCode(0);
       default:
-        error('<if> requires a condition', position - 1, position);
-        null;
+        throw error('<if> requires a condition', position - 1, position);
     }
 
     whitespace();
 
     if (match('/>')) {
-      error('<if> cannot be a void tag', start, position);
+      throw error('<if> cannot be a void tag', start, position);
     }
     
     consume('>');
@@ -104,7 +106,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     }
 
     if (!didClose) {
-      error('Unclosed <if>', start, position);
+      throw error('Unclosed <if>', start, position);
     }
 
     if (hasElseBranch) {
@@ -121,20 +123,50 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
 
   function parseNode():MarkupNode {
     var start = position - 1;
-    var name = path();
+    var name:String;
     var attrs:Array<MarkupAttribute> = [];
-    var children:Array<MarkupNode> = [];
+    var children:Array<MarkupNode> = null;
 
+    if (match('>')) {
+      whitespace();
+      children = [];
+      var didClose = false;
+      var isClosed = () -> didClose = match('</>'); 
+      do {
+        children.push(parseRoot());
+        whitespace();
+      } while (!isAtEnd() && !isClosed());
+      if (!didClose) {
+        throw error('Unclosed fragment', start, position);
+      }
+      return {
+        node: MFragment(children),
+        pos: getPos(start, position)
+      };
+    }
+
+    name = path();
+    
     whitespace();
 
-    while (!(peek() == '>' || peek() == '/') && !isAtEnd()) {
-      var attrStart = position;
-      var key:String = '';
+    while (!(peek() == '>') && !isAtEnd()) {
+      if (match('//')) {
+        ignoreLine();
+        whitespace();
+        continue;
+      }
 
-      whitespace();
-      if (match('.')) key = '.';
-      key += ident();
-      whitespace();
+      if (peek() == '/') {
+        break;
+      }
+
+      var attrStart = position;
+      var key:String = ident();
+
+      // whitespace();
+      // if (match('.')) key = '.';
+      // key += ident();
+      // whitespace();
       consume('=');
       whitespace();
       var value = parseValue();
@@ -178,7 +210,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     }
 
     if (!didClose) {
-      error('Unclosed tag: ${closeTag}', start, position);
+      throw error('Unclosed tag: ${closeTag}', start, position);
     }
 
     return children;
@@ -231,8 +263,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
         if (peek() == '{') {
           Code(parseCode(0));
         } else {
-          error('Expected a string, `$${...}` or `{...}`', position, position);
-          null;
+          throw error('Expected a string, `$${...}` or `{...}`', position, position);
         }
     }
   }
@@ -248,7 +279,8 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       }
     }
 
-    if (isAtEnd()) error('Unterminated string', start, position);
+    if (isAtEnd()) 
+      throw error('Unterminated string', start, position);
     
     return out;
   }

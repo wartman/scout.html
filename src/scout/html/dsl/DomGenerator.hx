@@ -165,6 +165,10 @@ class DomGenerator {
           __e;
         }
 
+      case MFragment(children):
+        var exprs:Array<Expr> = [ for (c in children) generateNode(c, values) ];
+        return macro @:pos(pos) $b{exprs};
+
       case MNone: null;
 
     }

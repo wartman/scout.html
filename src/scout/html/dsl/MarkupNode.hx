@@ -23,6 +23,7 @@ enum MarkupNodeDef {
     children:Array<MarkupNode>,
     isComponent:Bool
   );
+  MFragment(children:Array<MarkupNode>);
   MText(value:String);
   MCode(value:String);
   MIf(

@@ -22,6 +22,10 @@ class Parser<T> {
     return null;
   }
 
+  function ignoreLine() {
+    while (!isAtEnd() && !match('\n')) advance();
+  }
+
   function whitespace() {
     while (isWhitespace(peek()) && !isAtEnd()) advance();
   }

@@ -7,11 +7,11 @@ abstract TodoItem(TemplateResult) to TemplateResult {
   public function new(props:{
     todo:Todo
   }) {
-    this = html('
+    this = html(
       <li class="todo-item">
         <p>{props.todo.content}</p>
       </li>
-    ');
+    );
   }
 
 }
