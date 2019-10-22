@@ -42,21 +42,19 @@ abstract Element(Node) from Node to Node {
   function handleAttributes(attrs:Array<ElementAttribute>, context:Context) {
     for (attr in attrs) switch attr.value {
       case AttrConstant(value):
-        handleAttribute(attr.name, ValueDynamic(value), null);
+        handleAttribute(attr.name, ValueDynamic(value), ValueDynamic(null));
       case AttrPart:
         context.add(new Property(handleAttribute.bind(attr.name)));
     }
   }
   
   function handleAttribute(name:String, value:Value, previousValue:Value) {
-    if (previousValue == null) {
-      previousValue = ValueDynamic(null);
-    }
     var el:js.html.Element = cast this;
     switch [ value, previousValue ] {
       case [ ValueDynamic(newValue), ValueDynamic(oldValue) ]:
         if (oldValue == newValue) return;
         if (name.startsWith('on')) {
+          // todo: replace this with a `ValueEvent`.
           var event = name.substr(2).toLowerCase();
           el.removeEventListener(event, cast previousValue);
           el.addEventListener(event, newValue);

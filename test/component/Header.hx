@@ -22,9 +22,9 @@ class Header extends Component {
           i = 0;
           title = "Reset";
         }}>Reset</component.Button>
-        // <for {item in items}>
-        //   <p>{item}</p>
-        // </for>
+        <for {item in items}>
+          <p>{item}</p>
+        </for>
         <if {children != null}>
           {children}
         <else>

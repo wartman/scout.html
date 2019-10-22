@@ -118,9 +118,12 @@ class DomGenerator {
         macro @:pos(pos) EText($v{value});
 
       case MFor(it, children):
-        var expr = Context.parse(it, pos);
-        var children = new DomGenerator(children, pos).generate();
-        values.push(macro @:pos(pos) ValueIterator([ for (${expr}) ${children} ]));
+        switch Context.parse(it, pos) {
+          case macro $i{name} in $target:
+            values.push(macro @:pos(pos) ValueIterable([ for ($i{name} in ${target}) ValueResult(${new DomGenerator(children, pos).generate()}) ]));
+          default:
+            Context.error('Invalid loop iterator', pos);
+        }
         macro @:pos(pos) EPart;
 
       case MIf(cond, passing, failed):
@@ -173,10 +176,16 @@ class DomGenerator {
   }
 
   function makeValue(expr:Expr):Expr {
-    var t = Context.typeof(expr);
-    return if (Context.unify(t, Context.getType('scout.html2.Result'))) {
-      macro @:pos(expr.pos) ValueResult(${expr});
-    } else switch expr.expr {
+    // todo: this is being done because of the way I'm handing "for" loops.
+    // It is probably prone to big bugs. Think of a way to type the expr.
+    try {
+      if (Context.unify(Context.typeof(expr), Context.getType('scout.html2.Result'))) {
+        return macro @:pos(expr.pos) ValueResult(${expr});
+      } 
+    } catch(e:Dynamic) {
+      // noop
+    }
+    return switch expr.expr {
       case EArrayDecl(values): 
         var exprs = [ for (v in values) makeValue(v) ];
         macro @:pos(expr.pos) ValueIterable([ $a{exprs} ]);
