@@ -1,11 +1,8 @@
 import js.Browser;
 import js.html.Event;
-import scout.html.Component;
-import scout.html.Template.html;
-import scout.html.TemplateResult;
+import scout.html2.Renderer;
+import scout.html2.Template.html;
 import component.Header;
-
-using scout.html.Renderer;
 
 class Test {
 

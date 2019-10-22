@@ -1,8 +1,7 @@
 package component;
 
-import scout.html.Component;
-import scout.html.TemplateResult;
-import scout.html.Template.html;
+import scout.html2.*;
+import scout.html2.Template.html;
 
 class Header extends Component {
 
@@ -14,7 +13,7 @@ class Header extends Component {
     title = 'Changed: ${i++}';
   }
 
-  override function render():TemplateResult {
+  override function render():Result {
     return html(
       <header>
         <p>{title}</p>
@@ -23,9 +22,9 @@ class Header extends Component {
           i = 0;
           title = "Reset";
         }}>Reset</component.Button>
-        <for {item in items}>
-          <p>{item}</p>
-        </for>
+        // <for {item in items}>
+        //   <p>{item}</p>
+        // </for>
         <if {children != null}>
           {children}
         <else>
@@ -37,11 +36,11 @@ class Header extends Component {
 
 }
 
-abstract Button(TemplateResult) to TemplateResult {
+abstract Button(Result) to Result {
   
   public function new(props:{
     ev:(e:js.html.Event)->Void,
-    children:TemplateResult
+    children:Result
   }) {
     this = html('
       <button onClick={props.ev}>
