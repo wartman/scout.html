@@ -12,11 +12,7 @@ abstract TodoItem(Result) to Result {
       <li class="todo-item">
         <p>{props.todo.content}</p>
         <button
-          onClick={_ -> {
-            trace(props.todo);
-            trace(props.store);
-            props.store.removeTodo(props.todo);
-          }}
+          onClick={_ -> props.store.removeTodo(props.todo)}
         >X</button>
       </li>
     );

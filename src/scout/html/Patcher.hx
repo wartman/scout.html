@@ -6,7 +6,7 @@ import js.Browser;
 class Patcher implements Part {
   
   public final target:Target = new Target();
-  final children:Array<Patcher> = [];
+  var children:Array<Patcher> = [];
   var context:Context = null;
   var pendingValue:Value;
   var currentValue:Value = ValueDynamic(null);
@@ -31,7 +31,7 @@ class Patcher implements Part {
         case ValueIterable(_):
           commitIterable(values);
         default:
-          children.resize(0);
+          children = [];
           clear();
           commitIterable(values);
       }
@@ -72,7 +72,7 @@ class Patcher implements Part {
         if (index == 0) {
           patcher.target.appendIntoTarget(target);
         } else {
-          patcher.target.insertAfterTarget(target);
+          patcher.target.insertAfterTarget(children[index - 1].target);
         }
       }
       patcher.set(value);
@@ -80,7 +80,7 @@ class Patcher implements Part {
       index++;
     }
     if (index < children.length) {
-      children.resize(index);
+      children = children.splice(0, index);
       clear(patcher != null ? patcher.target.endNode : null);
     }
   }
