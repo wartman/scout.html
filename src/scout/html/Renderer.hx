@@ -1,27 +1,32 @@
 package scout.html;
 
+// #if js
+
 import js.html.Node;
 import js.html.Element;
 import haxe.ds.Map;
-import scout.html.part.NodePart;
 
 class Renderer {
   
-  static final parts = new Map<Node, NodePart>();
+  static final parts = new Map<Node, Patcher>();
 
   public static function render(
-    result:TemplateResult, 
+    result:Result, 
     container:Element
   ) {
     var part = parts.get(container);
     if (part == null) {
       Dom.removeNodes(container, container.firstChild);
-      part = new NodePart();
+      part = new Patcher();
       parts.set(container, part);
-      part._scout_target.appendInto(container);
+      part.target.appendInto(container);
     }
-    part.setValue(result);
+    part.set(ValueResult(result));
     part.commit();
   }
 
 }
+
+// #else
+
+// #end

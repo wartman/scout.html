@@ -1,4 +1,4 @@
-package scout.html2;
+package scout.html;
 
 import js.Browser;
 import js.html.Node;

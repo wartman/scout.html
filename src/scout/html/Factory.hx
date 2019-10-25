@@ -1,4 +1,4 @@
-package scout.html2;
+package scout.html;
 
 typedef Factory = {
   public final id:String;

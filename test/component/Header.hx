@@ -1,7 +1,7 @@
 package component;
 
-import scout.html2.*;
-import scout.html2.Template.html;
+import scout.html.*;
+import scout.html.Template.html;
 
 class Header extends Component {
 

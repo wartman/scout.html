@@ -1,9 +1,9 @@
-package scout.html2;
+package scout.html;
 
 #if js
 
 import js.html.Node;
-import scout.html2.ElementType;
+import scout.html.ElementType;
 
 using StringTools;
 
@@ -56,7 +56,7 @@ abstract Element(Node) from Node to Node {
         if (name.startsWith('on')) {
           // todo: replace this with a `ValueEvent`.
           var event = name.substr(2).toLowerCase();
-          el.removeEventListener(event, cast previousValue);
+          el.removeEventListener(event, oldValue);
           el.addEventListener(event, newValue);
         } else if (newValue == true) {
           el.setAttribute(name, name);

@@ -1,4 +1,4 @@
-package scout.html2;
+package scout.html;
 
 import js.html.Node;
 import js.Browser;
@@ -27,8 +27,14 @@ class Patcher implements Part {
           commitText(s);
       }
 
-      case ValueIterable(values):
-        commitIterable(values);
+      case ValueIterable(values): switch currentValue {
+        case ValueIterable(_):
+          commitIterable(values);
+        default:
+          children.resize(0);
+          clear();
+          commitIterable(values);
+      }
 
       case ValueResult(newResult): switch currentValue {
         case ValueResult(oldResult) if (
@@ -56,14 +62,14 @@ class Patcher implements Part {
   }
 
   function commitIterable(values:Array<Value>) {
-    var patcherIndex = 0;
+    var index = 0;
     var patcher:Patcher = null;
     for (value in values) {
-      patcher = children[patcherIndex];
+      patcher = children[index];
       if (patcher == null) {
         patcher = new Patcher();
         children.push(patcher);
-        if (patcherIndex == 0) {
+        if (index == 0) {
           patcher.target.appendIntoTarget(target);
         } else {
           patcher.target.insertAfterTarget(target);
@@ -71,10 +77,10 @@ class Patcher implements Part {
       }
       patcher.set(value);
       patcher.commit();
-      patcherIndex++;
+      index++;
     }
-    if (patcherIndex < children.length) {
-      children.resize(patcherIndex);
+    if (index < children.length) {
+      children.resize(index);
       clear(patcher != null ? patcher.target.endNode : null);
     }
   }

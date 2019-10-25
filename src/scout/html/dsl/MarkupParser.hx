@@ -4,8 +4,6 @@ import scout.html.dsl.MarkupNode;
 
 using StringTools;
 
-using StringTools;
-
 class MarkupParser extends Parser<Array<MarkupNode>> {
 
   override function parse():Array<MarkupNode> {
@@ -132,10 +130,10 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       children = [];
       var didClose = false;
       var isClosed = () -> didClose = match('</>'); 
-      do {
+      while (!isAtEnd() && !isClosed()) {
         children.push(parseRoot());
         whitespace();
-      } while (!isAtEnd() && !isClosed());
+      }
       if (!didClose) {
         throw error('Unclosed fragment', start, position);
       }

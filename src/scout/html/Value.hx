@@ -1,4 +1,4 @@
-package scout.html2;
+package scout.html;
 
 enum Value {
   ValueDynamic(s:Dynamic);

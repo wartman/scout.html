@@ -1,20 +1,27 @@
 package scout.html;
 
+#if !macro
+
 import haxe.DynamicAccess;
 
-@:autoBuild(scout.html.macro.ComponentBuilder.build())
+@:autoBuild(scout.html.Component.build())
 class Component implements Part {
-  
+
   @:noCompletion public final _scout_target:Target = new Target();
+  @:noCompletion var _scout_context:Context;
   @:noCompletion var _scout_properties:DynamicAccess<Dynamic> = {};
-  @:noCompletion var _scout_instance:TemplateInstance;
 
   final public function new() {
     _scout_init();
   }
-  
-  public function setValue(props:Dynamic) {
-    _scout_properties = props;
+
+  public function set(value:Value) {
+    switch value {
+      case ValueDynamic(v): 
+        _scout_properties = v;
+      default:
+        throw 'Invalid value type';
+    }
   }
 
   @:noCompletion function _scout_setProperty(key:String, value:Dynamic) {
@@ -25,31 +32,101 @@ class Component implements Part {
   @:noCompletion function _scout_getProperty(key:String):Dynamic {
     return _scout_properties.get(key);
   }
-
+  
   @:noCompletion function _scout_init() {
     // noop;
+  }
+
+  public function render():Result {
+    return null;
   }
 
   public function commit() {
     if (_scout_properties == null) {
       dispose();
-    } else if (_scout_instance != null) {
-      _scout_instance.update(render().values);
+    } else if (_scout_context != null) {
+      _scout_context.update(render().values);
     } else {
       var result = render();
-      _scout_instance = result.factory.get();
-      _scout_instance.update(result.values);
-      _scout_target.insert(_scout_instance.el);
+      _scout_context = result.factory.get();
+      _scout_context.update(result.values);
+      _scout_target.insert(_scout_context.el);
     }
   }
-  
-  public function render():TemplateResult {
-    return null;
-  }
 
-  public function dispose():Void {
-    _scout_instance = null;
+  public function dispose() {
+    _scout_context = null;
     _scout_properties = null;
   }
 
 }
+
+#else
+
+import haxe.macro.Expr;
+import haxe.macro.Context;
+
+using Lambda;
+using haxe.macro.ComplexTypeTools;
+
+class Component {
+
+  public static function build() {
+    var fields = Context.getBuildFields();
+    var newFields:Array<Field> = [];
+    var hasChildren:Bool = false;
+    var initializers:Array<Expr> = [];
+
+    for (f in fields) {
+      if (f.name == 'children') {
+        switch (f.kind) {
+          case FVar(t, _):
+            hasChildren = true;
+            if (!Context.unify(t.toType(), Context.getType('scout.html.Result'))) {
+              Context.error('`children` must always be scout.html.Result', f.pos);
+            }
+          default:
+            Context.error('`children` must be a var', f.pos);
+        }
+      }
+    }
+
+    if (!hasChildren) {
+      fields.push((macro class {
+        @:attribute var children:scout.html.Result;
+      }).fields[0]);
+    }
+    
+    for (f in fields) switch (f.kind) {
+      case FVar(t, e):
+        if (f.meta.exists(m -> m.name == ':attribute' || m.name == ':attr')) {
+          f.kind = FProp('get', 'set', t, null);
+          var name = f.name;
+          var getName = 'get_${name}';
+          var setName = 'set_${name}';
+          if (e != null) {
+            initializers.push(macro this._scout_properties.set($v{name}, $e));
+          }
+          newFields = newFields.concat((macro class {
+            function $setName(value) {
+              _scout_setProperty($v{name}, value);
+              return value;
+            }
+            function $getName() return _scout_getProperty($v{name});
+          }).fields);
+        }
+      default:
+    }
+
+    newFields = newFields.concat((macro class {
+      override function _scout_init() {
+        $b{initializers};
+      }
+    }).fields);
+    
+    return fields.concat(newFields);
+  }
+
+}
+
+#end

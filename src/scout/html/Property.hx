@@ -1,9 +1,9 @@
-package scout.html2;
+package scout.html;
 
 class Property implements Part {
   
   final committer:(value:Value, oldValue:Value)->Void;
-  var currentValue:Value;
+  var currentValue:Value = ValueDynamic(null);
   var pendingValue:Value;
 
   public function new(committer) {
