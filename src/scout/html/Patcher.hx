@@ -31,7 +31,7 @@ class Patcher implements Part {
         case ValueIterable(_):
           commitIterable(values);
         default:
-          children = [];
+          disposeChildren();
           clear();
           commitIterable(values);
       }
@@ -53,14 +53,6 @@ class Patcher implements Part {
     currentValue = pendingValue;
   }
 
-  public function dispose() {
-    context = null;
-    for (patcher in children) {
-      patcher.dispose();
-    }
-    children.resize(0);
-  }
-
   function commitIterable(values:Array<Value>) {
     var index = 0;
     var patcher:Patcher = null;
@@ -80,7 +72,7 @@ class Patcher implements Part {
       index++;
     }
     if (index < children.length) {
-      children = children.splice(0, index);
+      disposeChildren(index);
       clear(patcher != null ? patcher.target.endNode : null);
     }
   }
@@ -99,8 +91,25 @@ class Patcher implements Part {
   }
 
   function commitNode(value:Node):Void {
+    disposeChildren();
     clear();
     target.insert(value);
+  }
+
+  public function dispose() {
+    context = null;
+    disposeChildren();
+  }
+
+  function disposeChildren(index:Int = 0) {
+    for (i in index...children.length) {
+      children[i].dispose();
+    }
+    if (index == 0) {
+      children = [];
+    } else {
+      children = children.splice(0, index);
+    }
   }
 
   function clear(?startNode:Node) {

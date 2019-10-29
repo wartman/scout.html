@@ -10,7 +10,7 @@ class Context {
 
   public function new(id, type:ElementType) {
     this.id = id;
-    this.el = new Element(type, this);
+    this.el = Template.render(type, this);
   }
 
   public function add(part:Part) {
