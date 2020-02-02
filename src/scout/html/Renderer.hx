@@ -14,7 +14,7 @@ class Renderer {
   ) {
     var part = parts.get(container);
     if (part == null) {
-      Dom.removeNodes(container, container.firstChild);
+      DomTools.removeNodes(container, container.firstChild);
       part = new NodePart();
       parts.set(container, part);
       part._scout_target.appendInto(container);

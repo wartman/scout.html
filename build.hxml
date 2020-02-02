@@ -1,6 +1,9 @@
 -cp src
 -cp test
 -cp example
+
+-lib medic
+
 -main Test
 
 -dce full
@@ -13,6 +16,7 @@
 
 --next
 
+-D js-es=6
 -lib hxnodejs
 -js dist/app.js
 

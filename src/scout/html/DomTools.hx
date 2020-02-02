@@ -2,7 +2,7 @@ package scout.html;
 
 import scout.html.dom.*;
 
-class Dom {
+class DomTools {
 
   public static function removeNodes(
     container:Node,

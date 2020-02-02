@@ -1,6 +1,6 @@
 package scout.html;
 
-import scout.html.Dom.*;
+import scout.html.DomTools.*;
 import scout.html.dom.Node;
 
 @:forward

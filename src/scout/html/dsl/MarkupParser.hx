@@ -26,8 +26,6 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       case '/' if (match('/')):
         ignoreLine();
         null;
-      case '<' if (match('for')): parseFor();
-      case '<' if (match('if')): parseIf();
       case '<' if (match('/')): 
         throw error('Unexpected close tag', position - 1, position + 1);
       case '<': parseNode();
@@ -35,90 +33,6 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       case '{': parseCodeBlock(1);
       default: parseText(previous());
     }
-  }
-
-  function parseFor():MarkupNode {
-    var start = position - 4;
-
-    whitespace();
-
-    var it = switch advance() {
-      case '{': parseCode(1);
-      case '$': parseCode(0);
-      default:
-        throw error('<for> requires an iterator', position - 1, position);
-    }
-
-    whitespace();
-
-    if (match('/>')) {
-      throw error('<for> cannot be a void tag', start, position);
-    }
-
-    consume('>');
-    whitespace();
-    
-    var children = parseChildren('for');
-    
-    return {
-      node: MFor(it, children),
-      pos: getPos(start, position)
-    };
-  }
-
-  function parseIf():MarkupNode {
-    var start = position - 3;
-    var hasElseBranch:Bool = false;
-    var didClose:Bool = false;
-    var endThenBranch = () -> {
-      if (match('<else>')) {
-        hasElseBranch = true;
-        didClose = true;
-        return true;
-      }
-      return didClose = match('</if>');
-    };
-    var passing:Array<MarkupNode> = [];
-    var failed:Array<MarkupNode> = [];
-    var cond:String = '';
-
-    whitespace();
-
-    cond = switch advance() {
-      case '{': parseCode(1);
-      case '$': parseCode(0);
-      default:
-        throw error('<if> requires a condition', position - 1, position);
-    }
-
-    whitespace();
-
-    if (match('/>')) {
-      throw error('<if> cannot be a void tag', start, position);
-    }
-    
-    consume('>');
-    whitespace();
-
-    while (!isAtEnd() && !endThenBranch()) {
-      passing.push(parseRoot());
-      whitespace();
-    }
-
-    if (!didClose) {
-      throw error('Unclosed <if>', start, position);
-    }
-
-    if (hasElseBranch) {
-      failed = parseChildren('if');
-    } else {
-      failed = null;
-    }
-
-    return {
-      node: MIf(cond, passing, failed),
-      pos: getPos(start, position)
-    };
   }
 
   function parseNode():MarkupNode {
@@ -161,12 +75,13 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
       }
 
       var attrStart = position;
-      var key:String = ident();
+      var key:String = '';
 
-      // whitespace();
-      // if (match('.')) key = '.';
-      // key += ident();
-      // whitespace();
+      whitespace();
+      if (match('.') || match('@') || match('?')) key = previous();
+      key += ident();
+      whitespace();
+      
       consume('=');
       whitespace();
       var value = parseValue();

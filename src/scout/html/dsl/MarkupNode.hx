@@ -26,15 +26,6 @@ enum MarkupNodeDef {
   MFragment(children:Array<MarkupNode>);
   MText(value:String);
   MCode(value:String);
-  MIf(
-    cond:String,
-    passing:Array<MarkupNode>,
-    ?failed:Array<MarkupNode>
-  );
-  MFor(
-    it:String,
-    children:Array<MarkupNode>
-  );
   MNone;
 }
 

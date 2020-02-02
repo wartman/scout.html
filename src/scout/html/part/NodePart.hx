@@ -1,7 +1,7 @@
 package scout.html.part;
 
 import scout.html.*;
-import scout.html.Dom.*;
+import scout.html.DomTools.*;
 import scout.html.dom.*;
 
 class NodePart implements Part {

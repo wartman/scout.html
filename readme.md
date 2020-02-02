@@ -1,8 +1,38 @@
 Scout Html
 ==========
 
-A first pass at creating a [lit-html](https://github.com/Polymer/lit-html) like
-framework for Haxe.
+A first pass at porting (with some differences) [lit-html](https://github.com/Polymer/lit-html) into Haxe.
+
+Templates
+---------
+
+Templates in Scout work about the same as they do in `lit-html`:
+
+```haxe
+
+// `scout.html.dom` provides a simple DOM shim in Sys environments
+// or aliases for the real DOM in JS environments.
+import scout.html.dom.Document;
+import scout.html.Template.html;
+import scout.html.Template.render;
+
+class Main {
+
+  public static function main() {
+    var root = Document.root.body;
+    var title = 'foo';
+    var items = [ 'a', 'b', 'c' ];
+    render(html(<div>
+      <h1>${foo}</h1>
+      <ul>
+        ${ [ for (item in items) <li>${item}</li> ] }
+      </ul>
+    </div>), root);
+  }
+
+}
+
+```
 
 Components
 ----------
@@ -26,7 +56,7 @@ abstract Button(TemplateResult) to TemplateResult {
   }) {
     this = Template.html('<button 
       class={props.className}
-      onClick={props.onClick}
+      @click={props.onClick}
     >
       {props.children}
     </button>');

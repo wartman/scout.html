@@ -22,8 +22,8 @@ class Document extends Element {
   public function new() {
     super(DOCUMENT_NODE, '#document');
     appendChild(documentElement);
-    documentElement.appendChild(body);
     documentElement.appendChild(head);
+    documentElement.appendChild(body);
   }
 
   public function createElement(tag:String) {

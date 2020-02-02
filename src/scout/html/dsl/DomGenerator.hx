@@ -5,6 +5,7 @@ package scout.html.dsl;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import scout.html.dsl.MarkupNode;
+import scout.html.macro.TemplateBuilder;
 
 using StringTools;
 using haxe.macro.PositionTools;
@@ -69,7 +70,7 @@ class DomGenerator {
           generateNode(c, values)
         ].filter(e -> e != null);
         macro @:pos(pos) __e.appendChild({
-          var __e = scout.html.Dom.createElement($v{name});
+          var __e = scout.html.DomTools.createElement($v{name});
           $b{attrs}
           $b{children};
           __e;
@@ -92,7 +93,7 @@ class DomGenerator {
             field: attr.name,
             expr: switch attr.value {
               case Raw(v): macro @:pos(pos) $v{v};
-              case Code(v): Context.parse(v, pos);
+              case Code(v): parseExpr(v, pos);
             }
           }
         ];
@@ -129,7 +130,7 @@ class DomGenerator {
         }
 
       case MCode(v):
-        values.push(Context.parse(v, pos));
+        values.push(parseExpr(v, pos));
         macro @:pos(pos) {
           var __p = new scout.html.part.NodePart();
           __parts.push(__p);
@@ -138,32 +139,7 @@ class DomGenerator {
         }
 
       case MText(value):
-        macro @:pos(pos) __e.appendChild(scout.html.Dom.createTextNode($v{value}));
-      
-      case MFor(it, children):
-        var expr = Context.parse(it, pos);
-        var children = new DomGenerator(children, pos).generate();
-        values.push(macro @:pos(pos) [ for (${expr}) ${children} ]);
-        macro @:pos(pos) {
-          var __p = new scout.html.part.NodePart();
-          __parts.push(__p);
-          __p._scout_target.appendInto(__e);
-          __e;
-        }
-
-      case MIf(cond, passing, failed):
-        var expr = Context.parse(cond, pos);
-        var ifBranch = new DomGenerator(passing, pos).generate();
-        var elseBranch = failed != null 
-          ? new DomGenerator(failed, makePos(failed[0].pos)).generate()
-          : macro null;
-        values.push(macro @:pos(pos) if (${expr}) ${ifBranch} else ${elseBranch});
-        macro @:pos(pos) {
-          var __p = new scout.html.part.NodePart();
-          __parts.push(__p);
-          __p._scout_target.appendInto(__e);
-          __e;
-        }
+        macro @:pos(pos) __e.appendChild(scout.html.DomTools.createTextNode($v{value}));
 
       case MFragment(children):
         var exprs:Array<Expr> = [ for (c in children) generateNode(c, values) ];
@@ -176,22 +152,22 @@ class DomGenerator {
 
   function generateAttr(attr:MarkupAttribute, values:Array<Expr>):Expr {
     var pos = makePos(attr.pos);
-    if (attr.name.startsWith('on')) {
-      var event = attr.name.substr(2).toLowerCase();
+    if (attr.name.startsWith('@')) {
+      var event = attr.name.substr(1).toLowerCase();
       return switch attr.value {
         case Raw(v):
           Context.error('Events can only recieve functions', pos);
         case Code(v):
-          values.push(Context.parse(v, pos));
+          values.push(parseExpr(v, pos));
           macro @:pos(pos) __parts.push(new scout.html.part.EventPart(__e, $v{event}));
       }
-    } else if (attr.name.startsWith('is')) {
-      var name = attr.name.substr(2).toLowerCase();
+    } else if (attr.name.startsWith('?')) {
+      var name = attr.name.substr(1).toLowerCase();
       return switch attr.value {
         case Raw(v): 
           macro @:pos(pos) if (!!$v{v}) __e.setAttribute($v{name}, $v{name});
         case Code(v):
-          values.push(Context.parse(v, pos));
+          values.push(parseExpr(v, pos));
           macro @:pos(pos) __parts.push(new scout.html.part.BoolAttributePart(__e, $v{name}));
       }
     } else if (attr.name.startsWith('.')) {
@@ -200,7 +176,7 @@ class DomGenerator {
         case Raw(v):
           macro @:pos(pos) Reflect.setProperty(__e, $v{name}, $v{v});
         case Code(v):
-          values.push(Context.parse(v, pos));
+          values.push(parseExpr(v, pos));
           macro @:pos(pos) __parts.push(new scout.html.part.PropertyPart(__e, $v{name}));
       }
     } else {
@@ -208,7 +184,7 @@ class DomGenerator {
         case Raw(v):
           macro @:pos(pos) __e.setAttribute($v{attr.name}, $v{v});
         case Code(v):
-          values.push(Context.parse(v, pos));
+          values.push(parseExpr(v, pos));
           macro @:pos(pos) __parts.push(new scout.html.part.AttributePart(__e, $v{attr.name}));
       }
     }
@@ -221,6 +197,28 @@ class DomGenerator {
       max: pos.max,
       file: this.pos.getInfos().file
     });
+  }
+
+  function parseExpr(src:String, pos) {
+    var e = try Context.parseInlineString(src, pos)
+      catch (e:haxe.macro.Error) throw e
+      catch (e:Dynamic) Context.error(e, pos);
+    switch e.expr {
+      case EMeta({ name : ":markup" }, { expr : EConst(CString(value)), pos : pos }):
+        e = TemplateBuilder.parse(macro @:pos(pos) $v{value});
+      default:
+        reenterLoop(e);
+    }
+    return e;
+  }
+
+  function reenterLoop(e:Expr) {
+    switch e {
+      case macro @:markup $value:
+        e.expr = TemplateBuilder.parse(value).expr;
+      default:
+        haxe.macro.ExprTools.iter(e, e -> reenterLoop(e));
+    }
   }
 
 }
