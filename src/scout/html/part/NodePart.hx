@@ -1,9 +1,8 @@
 package scout.html.part;
 
-import js.html.Node;
-import js.Browser;
 import scout.html.*;
 import scout.html.Dom.*;
+import scout.html.dom.*;
 
 class NodePart implements Part {
 
@@ -93,9 +92,10 @@ class NodePart implements Part {
       node == _scout_target.endNode.previousSibling
       && node.nodeType == Node.TEXT_NODE
     ) {
-      node.textContent = value;
+      var txt:Text = cast node;
+      txt.textContent = value;
     } else {
-      commitNode(Browser.document.createTextNode(value));
+      commitNode(Document.root.createTextNode(value));
     }
     currentValue = value;
   }

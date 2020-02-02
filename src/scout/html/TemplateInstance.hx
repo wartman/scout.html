@@ -1,6 +1,6 @@
 package scout.html;
 
-import js.html.Element;
+import scout.html.dom.Element;
 
 class TemplateInstance {
 

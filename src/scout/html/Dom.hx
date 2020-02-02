@@ -1,7 +1,6 @@
 package scout.html;
 
-import js.Browser;
-import js.html.Node;
+import scout.html.dom.*;
 
 class Dom {
 
@@ -18,16 +17,16 @@ class Dom {
     }
   }
 
-  public static inline function createMarker() {
-    return Browser.document.createComment('');
+  public static inline function createMarker():Node {
+    return Document.root.createComment('');
   }
 
   public static inline function createElement(name:String) {
-    return Browser.document.createElement(name);
+    return Document.root.createElement(name);
   }
 
   public static inline function createTextNode(value:String) {
-    return Browser.document.createTextNode(value);
+    return Document.root.createTextNode(value);
   }
 
 }

@@ -1,8 +1,7 @@
 package scout.html;
 
-import js.html.Node;
-import js.html.Element;
 import haxe.ds.Map;
+import scout.html.dom.*;
 import scout.html.part.NodePart;
 
 class Renderer {

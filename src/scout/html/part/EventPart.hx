@@ -1,7 +1,7 @@
 package scout.html.part;
 
-import js.html.Element;
-import js.html.Event;
+import scout.html.dom.Element;
+import scout.html.dom.Event;
 import scout.html.Part;
 import scout.html.Directive;
 

@@ -1,5 +1,6 @@
 package component;
 
+import scout.html.dom.Event;
 import scout.html.Component;
 import scout.html.TemplateResult;
 import scout.html.Template.html;
@@ -40,7 +41,7 @@ class Header extends Component {
 abstract Button(TemplateResult) to TemplateResult {
   
   public function new(props:{
-    ev:(e:js.html.Event)->Void,
+    ev:(e:Event)->Void,
     children:TemplateResult
   }) {
     this = html('

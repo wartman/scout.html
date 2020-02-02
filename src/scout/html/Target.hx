@@ -1,7 +1,7 @@
 package scout.html;
 
-import js.html.Node;
 import scout.html.Dom.*;
+import scout.html.dom.Node;
 
 @:forward
 abstract Target({

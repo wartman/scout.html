@@ -2,7 +2,20 @@
 -cp test
 -cp example
 -main Test
+
 -dce full
--D js-es=6
 -D analyzer-optimize
+
+--each
+
+-D js-es=6
 -js dist/test.js
+
+--next
+
+-lib hxnodejs
+-js dist/app.js
+
+--next
+
+-php dist/php
