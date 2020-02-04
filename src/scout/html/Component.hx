@@ -5,41 +5,41 @@ import haxe.DynamicAccess;
 @:autoBuild(scout.html.macro.ComponentBuilder.build())
 class Component implements Part {
   
-  @:noCompletion public final _scout_target:Target = new Target();
-  @:noCompletion var _scout_properties:DynamicAccess<Dynamic> = {};
-  @:noCompletion var _scout_instance:TemplateInstance;
+  @:noCompletion public final __target:Target = new Target();
+  @:noCompletion var __properties:DynamicAccess<Dynamic> = {};
+  @:noCompletion var __instance:TemplateInstance;
 
   final public function new() {
-    _scout_init();
+    __init();
   }
   
   public function setValue(props:Dynamic) {
-    _scout_properties = props;
+    __properties = props;
   }
 
-  @:noCompletion function _scout_setProperty(key:String, value:Dynamic) {
-    _scout_properties.set(key, value);
+  @:noCompletion function __setProperty(key:String, value:Dynamic) {
+    __properties.set(key, value);
     commit();
   }
 
-  @:noCompletion function _scout_getProperty(key:String):Dynamic {
-    return _scout_properties.get(key);
+  @:noCompletion function __getProperty(key:String):Dynamic {
+    return __properties.get(key);
   }
 
-  @:noCompletion function _scout_init() {
+  @:noCompletion function __init() {
     // noop;
   }
 
   public function commit() {
-    if (_scout_properties == null) {
+    if (__properties == null) {
       dispose();
-    } else if (_scout_instance != null) {
-      _scout_instance.update(render().values);
+    } else if (__instance != null) {
+      __instance.update(render().values);
     } else {
       var result = render();
-      _scout_instance = result.factory.get();
-      _scout_instance.update(result.values);
-      _scout_target.insert(_scout_instance.el);
+      __instance = result.factory.get();
+      __instance.update(result.values);
+      __target.insert(__instance.el);
     }
   }
   
@@ -48,8 +48,8 @@ class Component implements Part {
   }
 
   public function dispose():Void {
-    _scout_instance = null;
-    _scout_properties = null;
+    __instance = null;
+    __properties = null;
   }
 
 }

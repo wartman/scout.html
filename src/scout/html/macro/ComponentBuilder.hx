@@ -44,21 +44,21 @@ class ComponentBuilder {
           var getName = 'get_${name}';
           var setName = 'set_${name}';
           if (e != null) {
-            initializers.push(macro this._scout_properties.set($v{name}, $e));
+            initializers.push(macro this.__properties.set($v{name}, $e));
           }
           newFields = newFields.concat((macro class {
             function $setName(value) {
-              _scout_setProperty($v{name}, value);
+              __setProperty($v{name}, value);
               return value;
             }
-            function $getName() return _scout_getProperty($v{name});
+            function $getName() return __getProperty($v{name});
           }).fields);
         }
       default:
     }
 
     newFields = newFields.concat((macro class {
-      override function _scout_init() {
+      override function __init() {
         $b{initializers};
       }
     }).fields);

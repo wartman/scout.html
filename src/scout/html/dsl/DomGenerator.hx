@@ -113,7 +113,7 @@ class DomGenerator {
           macro @:pos(pos) {
             var __p = new scout.html.part.NodePart();
             __parts.push(__p);
-            __p._scout_target.appendInto(__e);
+            __p.__target.appendInto(__e);
             __e;
           }
         } else {
@@ -124,7 +124,7 @@ class DomGenerator {
           macro @:pos(pos) {
             var __p = new $tp();
             __parts.push(__p);
-            __p._scout_target.appendInto(__e);
+            __p.__target.appendInto(__e);
             __e;
           }
         }
@@ -134,7 +134,7 @@ class DomGenerator {
         macro @:pos(pos) {
           var __p = new scout.html.part.NodePart();
           __parts.push(__p);
-          __p._scout_target.appendInto(__e);
+          __p.__target.appendInto(__e);
           __e;
         }
 

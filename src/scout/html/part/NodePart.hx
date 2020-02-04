@@ -6,7 +6,7 @@ import js.html.*;
 
 class NodePart implements Part {
 
-  public final _scout_target:Target = new Target();
+  public final __target:Target = new Target();
   var pendingValue:Dynamic;
   var currentValue:Dynamic;
 
@@ -49,9 +49,9 @@ class NodePart implements Part {
         itemPart = new NodePart();
         itemParts.push(itemPart);
         if (partIndex == 0) {
-          itemPart._scout_target.appendIntoTarget(_scout_target);
+          itemPart.__target.appendIntoTarget(__target);
         } else {
-          itemPart._scout_target.insertAfterTarget(itemParts[partIndex - 1]._scout_target);
+          itemPart.__target.insertAfterTarget(itemParts[partIndex - 1].__target);
         }
       }
       itemPart.setValue(item);
@@ -60,7 +60,7 @@ class NodePart implements Part {
     }
     if (partIndex < itemParts.length) {
       itemParts = itemParts.splice(0, partIndex);
-      clear(itemPart != null ? itemPart._scout_target.endNode : null);
+      clear(itemPart != null ? itemPart.__target.endNode : null);
     }
   }
 
@@ -81,15 +81,15 @@ class NodePart implements Part {
   function commitNode(value:Node):Void {
     if (currentValue == value) return;
     clear();
-    _scout_target.insert(value);
+    __target.insert(value);
     currentValue = value;
   }
 
   function commitText(value:String) {
-    var node = _scout_target.startNode.nextSibling;
+    var node = __target.startNode.nextSibling;
     value = value == null ? '' : value;
     if (
-      node == _scout_target.endNode.previousSibling
+      node == __target.endNode.previousSibling
       && node.nodeType == Node.TEXT_NODE
     ) {
       var txt:Text = cast node;
@@ -101,11 +101,11 @@ class NodePart implements Part {
   }
 
   public function clear(?startNode:Node) {
-    if (startNode == null) startNode = _scout_target.startNode;
+    if (startNode == null) startNode = __target.startNode;
     removeNodes(
       startNode.parentNode, 
       startNode.nextSibling,
-      _scout_target.endNode
+      __target.endNode
     );
   }
 
