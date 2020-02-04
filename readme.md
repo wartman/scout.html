@@ -10,16 +10,13 @@ Templates in Scout work about the same as they do in `lit-html`:
 
 ```haxe
 
-// `scout.html.dom` provides a simple DOM shim in Sys environments
-// or aliases for the real DOM in JS environments.
-import scout.html.dom.Document;
 import scout.html.Template.html;
 import scout.html.Template.render;
 
 class Main {
 
   public static function main() {
-    var root = Document.root.body;
+    var root = js.Browser.document.body;
     var title = 'foo';
     var items = [ 'a', 'b', 'c' ];
     render(html(<div>

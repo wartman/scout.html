@@ -1,6 +1,6 @@
 package scout.html;
 
-import scout.html.dom.*;
+import js.html.*;
 
 class DomTools {
 
@@ -18,15 +18,15 @@ class DomTools {
   }
 
   public static inline function createMarker():Node {
-    return Document.root.createComment('');
+    return js.Browser.document.createComment('');
   }
 
   public static inline function createElement(name:String) {
-    return Document.root.createElement(name);
+    return js.Browser.document.createElement(name);
   }
 
   public static inline function createTextNode(value:String) {
-    return Document.root.createTextNode(value);
+    return js.Browser.document.createTextNode(value);
   }
 
 }

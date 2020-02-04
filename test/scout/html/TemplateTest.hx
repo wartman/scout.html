@@ -1,6 +1,5 @@
 package scout.html;
 
-import scout.html.dom.*;
 import scout.html.Template.*;
 
 using Medic;
@@ -11,7 +10,7 @@ class TemplateTest implements TestCase {
 
   @test('Check reentrency')
   public function reentrency() {
-    var root = Document.root.createElement('div');
+    var root = js.Browser.document.createElement('div');
     var tpl = (stuff:Array<String>) -> html(<ul>
       ${ [ for (item in stuff) <li>${item}</li> ]  }
     </ul>);

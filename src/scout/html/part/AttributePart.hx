@@ -1,6 +1,6 @@
 package scout.html.part;
 
-import scout.html.dom.Element;
+import js.html.Element;
 import scout.html.Part;
 import scout.html.Directive;
 

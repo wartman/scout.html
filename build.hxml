@@ -18,8 +18,5 @@
 
 -D js-es=6
 -lib hxnodejs
+-lib nodom
 -js dist/app.js
-
---next
-
--php dist/php

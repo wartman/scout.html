@@ -2,7 +2,7 @@ package scout.html.part;
 
 import scout.html.*;
 import scout.html.DomTools.*;
-import scout.html.dom.*;
+import js.html.*;
 
 class NodePart implements Part {
 
@@ -95,7 +95,7 @@ class NodePart implements Part {
       var txt:Text = cast node;
       txt.textContent = value;
     } else {
-      commitNode(Document.root.createTextNode(value));
+      commitNode(js.Browser.document.createTextNode(value));
     }
     currentValue = value;
   }
