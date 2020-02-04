@@ -63,16 +63,16 @@ class DomGenerator {
     return switch node.node {
 
       case MNode(name, attrs, children, false):
-        var attrs = [ for (attr in attrs) 
+        var attrExpr = [ for (attr in attrs) 
           generateAttr(attr, values) 
         ];
-        var children = [ for (c in children)
+        var childrenExpr = [ for (c in children)
           generateNode(c, values)
         ].filter(e -> e != null);
         macro @:pos(pos) __e.appendChild({
           var __e = scout.html.DomTools.createElement($v{name});
-          $b{attrs}
-          $b{children};
+          $b{attrExpr}
+          $b{childrenExpr};
           __e;
         });
         

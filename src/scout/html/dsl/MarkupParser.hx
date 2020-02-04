@@ -39,7 +39,7 @@ class MarkupParser extends Parser<Array<MarkupNode>> {
     var start = position - 1;
     var name:String;
     var attrs:Array<MarkupAttribute> = [];
-    var children:Array<MarkupNode> = null;
+    var children:Array<MarkupNode> = [];
 
     if (match('>')) {
       whitespace();
