@@ -1,0 +1,10 @@
+{
+    "name": "scout.html",
+    "contributors": [ "wartman" ],
+    "license": "MIT",
+    "dependencies": {},
+    "version": "0.0.1-alpha.1",
+    "releasenote": "Alpha release",
+    "description": "A haxe port of lit-html",
+    "url": "https://github.com/wartman/scout.html"
+}
